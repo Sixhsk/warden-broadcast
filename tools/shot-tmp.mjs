@@ -1,0 +1,18 @@
+import WebSocket from 'ws';
+import fs from 'fs';
+const CDP = 'http://127.0.0.1:9333';
+const [page, out, w, h] = process.argv.slice(2);
+const created = await fetch(`${CDP}/json/new?${encodeURIComponent(page)}`, { method: 'PUT' }).then(r => r.json());
+const ws = new WebSocket(created.webSocketDebuggerUrl);
+await new Promise(r => ws.on('open', r));
+let id = 0; const pend = new Map();
+ws.on('message', b => { const m = JSON.parse(b); if (m.id && pend.has(m.id)) { pend.get(m.id)(m); pend.delete(m.id); } });
+const send = (method, params = {}) => new Promise(res => { const i = ++id; pend.set(i, res); ws.send(JSON.stringify({ id: i, method, params })); });
+const ev = async e => (await send('Runtime.evaluate', { expression: e, returnByValue: true })).result?.result?.value;
+await send('Emulation.setDeviceMetricsOverride', { width: +w, height: +h, deviceScaleFactor: 1, mobile: false });
+await new Promise(r => setTimeout(r, 2600));
+console.log(await ev(`(() => { const m = document.querySelector('.modal'); if(!m) return 'no modal'; const r = m.getBoundingClientRect(); return JSON.stringify({top: Math.round(r.top), bottom: Math.round(r.bottom), vh: innerHeight, maxH: getComputedStyle(m).maxHeight}); })()`));
+const shot = await send('Page.captureScreenshot', { format: 'png' });
+fs.writeFileSync(out, Buffer.from(shot.result.data, 'base64'));
+console.log('saved', out);
+ws.close();

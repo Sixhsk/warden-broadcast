@@ -1,0 +1,9 @@
+const WS=require('ws');
+const ws=new WS('ws://127.0.0.1:4455',{handshakeTimeout:8000,perMessageDeflate:false});
+const t0=Date.now();
+ws.on('upgrade',r=>console.log('upgrade',r.statusCode,Date.now()-t0));
+ws.on('open',()=>console.log('open',Date.now()-t0));
+ws.on('message',m=>{console.log('msg',Date.now()-t0,m.toString().slice(0,120));ws.close();process.exit(0)});
+ws.on('close',(c,r)=>console.log('close',c,r.toString(),Date.now()-t0));
+ws.on('error',e=>console.log('error',e.message));
+setTimeout(()=>{console.log('no hello in 9s');process.exit(2)},9000);

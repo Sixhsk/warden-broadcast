@@ -1,0 +1,14 @@
+import WebSocket from 'ws';
+import fs from 'node:fs';
+const [url, out, x, y, w, h, scale] = process.argv.slice(2);
+const created = await fetch('http://127.0.0.1:9333/json/new?' + encodeURIComponent(url), { method: 'PUT' }).then(r => r.json());
+const ws = new WebSocket(created.webSocketDebuggerUrl);
+await new Promise(r => ws.on('open', r));
+let id = 0; const pend = new Map();
+ws.on('message', b => { const m = JSON.parse(b); if (m.id && pend.has(m.id)) { pend.get(m.id)(m); pend.delete(m.id); } });
+const send = (method, params = {}) => new Promise(res => { const i = ++id; pend.set(i, res); ws.send(JSON.stringify({ id: i, method, params })); });
+await new Promise(r => setTimeout(r, 2600));
+const r = await send('Page.captureScreenshot', { format: 'png', clip: { x: +x, y: +y, width: +w, height: +h, scale: +(scale || 2) } });
+fs.writeFileSync(out, Buffer.from(r.result.data, 'base64'));
+console.log('cropped', out);
+ws.close();

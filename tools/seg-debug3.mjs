@@ -1,0 +1,27 @@
+import WebSocket from 'ws';
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const created = await fetch('http://127.0.0.1:9333/json/new?' + encodeURIComponent('http://127.0.0.1:7412/'), { method: 'PUT' }).then(r => r.json());
+const ws = new WebSocket(created.webSocketDebuggerUrl);
+await new Promise(r => ws.on('open', r));
+let id = 0; const pend = new Map();
+ws.on('message', b => { const m = JSON.parse(b); if (m.id && pend.has(m.id)) { pend.get(m.id)(m); pend.delete(m.id); } });
+const send = (m, p = {}) => new Promise(res => { const i = ++id; pend.set(i, res); ws.send(JSON.stringify({ id: i, method: m, params: p })); });
+const ev = async e => { const r = await send('Runtime.evaluate', { expression: e, returnByValue: true, awaitPromise: true }); return r.result?.exceptionDetails ? 'EXC ' + (r.result.exceptionDetails.exception?.description ?? '') : r.result?.result?.value; };
+await send('Emulation.setDeviceMetricsOverride', { width: 1680, height: 1020, deviceScaleFactor: 1, mobile: false });
+await sleep(2600);
+console.log(await ev(`(() => {
+  window.__ev = [];
+  const row = document.querySelectorAll('.frow')[2];
+  const set = row.querySelector('md-outlined-segmented-button-set');
+  set.addEventListener('segmented-button-set-selection', e => window.__ev.push(['set', JSON.stringify(e.detail?.index)]));
+  set.addEventListener('click', e => window.__ev.push(['click', e.target.tagName]), true);
+  const btn = set.querySelectorAll('md-outlined-segmented-button')[1];
+  const inner = btn.shadowRoot?.querySelector('button');
+  window.__ev.push(['inner', !!inner, inner?.outerHTML?.slice(0, 80)]);
+  return JSON.stringify(window.__ev);
+})()`));
+const box = await ev(`(() => { const b = [...document.querySelectorAll('.frow')[2].querySelectorAll('md-outlined-segmented-button')][1].getBoundingClientRect(); return { x: Math.round(b.x+b.width/2), y: Math.round(b.y+b.height/2) }; })()`);
+for (const type of ['mouseMoved','mousePressed','mouseReleased']) await send('Input.dispatchMouseEvent', { type, x: box.x, y: box.y, button: 'left', clickCount: 1 });
+await sleep(600);
+console.log(await ev(`JSON.stringify({ ev: window.__ev, sel: [...document.querySelectorAll('.frow')[2].querySelectorAll('md-outlined-segmented-button')].map(x=>x.selected) })`));
+ws.close(); process.exit(0);

@@ -1,0 +1,17 @@
+import { WebSocket } from 'ws';
+import fs from 'node:fs';
+const [,, url, out, x, y, w, h] = process.argv;
+const list = await (await fetch('http://127.0.0.1:9333/json/list')).json();
+const page = list.find((t) => t.type === 'page');
+const ws = new WebSocket(page.webSocketDebuggerUrl);
+let id = 0;
+const send = (m, p = {}) => { const my = ++id; ws.send(JSON.stringify({ id: my, method: m, params: p })); return new Promise((r) => { const hd = (d) => { const j = JSON.parse(d); if (j.id === my) { ws.off('message', hd); r(j.result); } }; ws.on('message', hd); }); };
+await new Promise((r) => ws.on('open', r));
+await send('Page.enable');
+await send('Emulation.setDeviceMetricsOverride', { width: 1680, height: 1020, deviceScaleFactor: 1, mobile: false });
+await send('Page.navigate', { url });
+await new Promise((r) => setTimeout(r, 4500));
+const res = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true, clip: { x: +x, y: +y, width: +w, height: +h, scale: 1 } });
+fs.writeFileSync(out, Buffer.from(res.data, 'base64'));
+console.log('saved', out);
+ws.close();

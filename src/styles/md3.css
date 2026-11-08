@@ -1,0 +1,1791 @@
+/* ============================================================================
+   Material Design 3 外观层
+   · 所有颜色来自 --md-sys-color-*（由种子色动态生成，见 src/lib/md3.ts）
+   · 控件本身用 @material/web 的 md-* 元素，这里只负责排版、表面与栅格
+   · 动效统一走 MD3 的 emphasized / standard 曲线，只过渡需要的属性
+   ============================================================================ */
+
+:root {
+  /* 语义色：A/B 队伍色不随主题色变化，保证"哪支队"永远可辨 */
+  --team-a: #7fcfd2;
+  --team-a-container: #10393c;
+  --team-b: #f0b95a;
+  --team-b-container: #3d2a08;
+
+  /* MD3 形状 */
+  --shape-xs: 4px;
+  --shape-s: 8px;
+  --shape-m: 12px;
+  --shape-l: 16px;
+  --shape-xl: 28px;
+  --shape-full: 999px;
+
+  /* MD3 阴影（elevation level 0–4，暗色下用低透明度叠加） */
+  --elevation-0: none;
+  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+  --elevation-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15);
+  --elevation-3: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15);
+  --elevation-4: 0 2px 3px rgba(0, 0, 0, 0.3), 0 6px 10px 4px rgba(0, 0, 0, 0.15);
+
+  /* MD3 动效 */
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --dur-short: 100ms;
+  --dur-medium: 200ms;
+  --dur-long: 300ms;
+  --dur-extra: 500ms;
+
+  /* 类型阶（MD3 type scale） */
+  --type-display-large: 57px;
+  --type-headline-small: 24px;
+  --type-title-large: 22px;
+  --type-title-medium: 16px;
+  --type-body-large: 16px;
+  --type-body-medium: 14px;
+  --type-label-large: 14px;
+  --type-label-medium: 12px;
+  --type-label-small: 11px;
+
+  color-scheme: dark;
+}
+
+/* ---------------------------------------------------------------------------
+   1. 基础
+   --------------------------------------------------------------------------- */
+
+html,
+body {
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font-family: 'Roboto Flex', 'Segoe UI Variable Text', 'Microsoft YaHei UI', system-ui, sans-serif;
+  font-size: var(--type-body-medium);
+  line-height: 20px;
+  letter-spacing: 0.25px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.num,
+[data-mono='1'] {
+  font-family: 'Roboto Mono', 'Cascadia Mono', 'Consolas', monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+/* @material/web 元素默认字体会走自己的 token，这里统一下基线 */
+md-filled-button,
+md-outlined-button,
+md-text-button,
+md-filled-tonal-button,
+md-elevated-button,
+md-icon-button,
+md-filter-chip,
+md-primary-tab {
+  --md-sys-typescale-label-large-font: 'Roboto Flex', 'Microsoft YaHei UI', system-ui, sans-serif;
+}
+
+/* MD3 里没有「发丝线」，分隔用 outline-variant 的 1dp */
+.md-divider {
+  height: 1px;
+  background: var(--md-sys-color-outline-variant);
+  border: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   2. 控制台
+   --------------------------------------------------------------------------- */
+
+.console-body {
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+}
+
+.console {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 顶栏：MD3 small app bar（surface-container，无阴影，靠色调分层） */
+.console .cbar {
+  height: 64px;
+  padding: 0 24px;
+  background: var(--md-sys-color-surface-container);
+  border-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.console .cbar .brand {
+  font-family: 'Roboto Flex', 'Microsoft YaHei UI', system-ui, sans-serif;
+  font-size: var(--type-title-large);
+  line-height: 28px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--md-sys-color-on-surface);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 品牌点改成 MD3 的 primary 竖条太高调，用一个 8dp 圆点 */
+.console .cbar .brand .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--shape-full);
+  background: var(--md-sys-color-primary);
+}
+
+.console .cbar .brand em {
+  font-size: var(--type-label-medium);
+  line-height: 16px;
+  letter-spacing: 0.5px;
+  font-style: normal;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.console .cbar .spacer {
+  flex: 1;
+}
+
+/* 连接状态：MD3 assist chip 的静态版 */
+.console .cbar .conn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--shape-s);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--type-label-large);
+  line-height: 20px;
+  letter-spacing: 0.1px;
+  border: 1px solid transparent;
+  transition: background-color var(--dur-medium) var(--ease-standard),
+    color var(--dur-medium) var(--ease-standard);
+}
+
+.console .cbar .conn.ok {
+  color: var(--md-sys-color-on-secondary-container);
+  background: var(--md-sys-color-secondary-container);
+}
+
+.console .cbar .conn.bad {
+  color: var(--md-sys-color-on-error-container);
+  background: var(--md-sys-color-error-container);
+}
+
+.console .cbar .ver {
+  font-size: var(--type-label-small);
+  letter-spacing: 0.5px;
+  color: var(--md-sys-color-on-surface-variant);
+  opacity: 0.8;
+}
+
+/* 主栅格 */
+.console .cmain {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 660px;
+  gap: 16px;
+  padding: 16px 24px 24px;
+  align-items: start;
+}
+
+.console .col-left,
+.console .col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* 卡片：MD3 filled card（surface-container-high + 12dp 圆角 + 无描边） */
+.console .card {
+  background: var(--md-sys-color-surface-container-high);
+  border: 0;
+  border-radius: var(--shape-m);
+  box-shadow: none;
+  overflow: hidden;
+  transition: background-color var(--dur-medium) var(--ease-standard);
+}
+
+.console .card > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 8px;
+  border: 0;
+  background: transparent;
+}
+
+.console .card h2 {
+  margin: 0;
+  font-size: var(--type-title-medium);
+  line-height: 24px;
+  font-weight: 500;
+  letter-spacing: 0.15px;
+  color: var(--md-sys-color-on-surface);
+}
+
+.console .card header p {
+  margin: 4px 0 0;
+  font-size: var(--type-label-medium);
+  line-height: 16px;
+  letter-spacing: 0.5px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.console .card-body {
+  padding: 8px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.console .card-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+/* 表单：MD3 输入框由 md-outlined-text-field 承担，这里只处理布局 */
+.console .grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.console .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.console .field > span {
+  display: none;
+}
+
+.console md-outlined-text-field {
+  width: 100%;
+  flex: none;
+  min-height: 52px;
+  --md-outlined-text-field-container-shape: 8px;
+  --md-outlined-field-container-height: 52px;
+  --md-outlined-text-field-container-height: 52px;
+  --md-outlined-text-field-label-text-font: 'Roboto Flex', 'Microsoft YaHei UI', system-ui, sans-serif;
+  --md-outlined-text-field-input-text-font: 'Roboto Flex', 'Microsoft YaHei UI', system-ui, sans-serif;
+}
+
+.console .grid3 md-outlined-text-field {
+  --md-outlined-field-container-height: 52px;
+  --md-outlined-text-field-container-height: 52px;
+}
+
+/* 按钮：MD3 按钮自身有高度与状态层；这里只阻止被 flex 压扁 */
+.console md-filled-button,
+.console md-outlined-button,
+.console md-text-button,
+.console md-filled-tonal-button,
+.console md-elevated-button {
+  --md-filled-button-container-shape: 8px;
+  --md-outlined-button-container-shape: 8px;
+  --md-text-button-container-shape: 8px;
+  --md-filled-tonal-button-container-shape: 8px;
+  flex: none;
+  white-space: nowrap;
+  /* MD3 按钮在窄 flex 容器里会退化成 min-content（中文逐字换行），强制一个最小宽度 */
+  min-width: 88px;
+}
+
+.console .card-right md-filled-button,
+.console .card-right md-outlined-button,
+.console .card-right md-text-button,
+.console .card-right md-filled-tonal-button,
+.console .row-gap md-filled-button,
+.console .row-gap md-outlined-button,
+.console .row-gap md-text-button,
+.console .row-gap md-filled-tonal-button {
+  flex: none;
+}
+
+/* 分段按钮：MD3 segmented button 自带高度与状态层 */
+.console md-outlined-segmented-button-set {
+  --md-outlined-segmented-button-outline-color: var(--md-sys-color-outline-variant);
+  --md-outlined-segmented-button-label-text-font: 'Roboto Flex', 'Microsoft YaHei UI', system-ui, sans-serif;
+  flex: none;
+}
+
+.console md-outlined-segmented-button {
+  --md-outlined-segmented-button-label-text-size: 12px;
+  --md-outlined-segmented-button-label-text-weight: 500;
+  --md-outlined-segmented-button-container-height: 32px;
+  --md-outlined-segmented-button-icon-size: 14px;
+}
+
+/* 队伍切换：MD3 filter chip，选中用队伍容器色 */
+.console .team-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.console .team-switch md-filter-chip {
+  --md-filter-chip-container-shape: 8px;
+  --md-filter-chip-label-text-font: 'Roboto Flex', 'Microsoft YaHei UI', system-ui, sans-serif;
+  --md-filter-chip-label-text-size: 14px;
+  --md-filter-chip-container-height: 44px;
+  --md-filter-chip-outline-color: var(--md-sys-color-outline-variant);
+}
+
+.console .team-switch md-filter-chip.a {
+  --md-filter-chip-selected-container-color: var(--team-a-container);
+  --md-filter-chip-selected-label-text-color: var(--team-a);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.console .team-switch md-filter-chip.b {
+  --md-filter-chip-selected-container-color: var(--team-b-container);
+  --md-filter-chip-selected-label-text-color: var(--team-b);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* 选手行：MD3 list item（surface-container-low，选中 → secondary-container 的近义染色） */
+.console .frows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.console .frow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  grid-template-areas: 'shot name ctl';
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--shape-m);
+  background: var(--md-sys-color-surface-container);
+  cursor: pointer;
+  transition: background-color var(--dur-short) var(--ease-standard),
+    border-color var(--dur-short) var(--ease-standard);
+}
+
+.console .frow:hover:not(.off) {
+  background: var(--md-sys-color-surface-container-highest);
+}
+
+.console .frow:active:not(.off) {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, var(--md-sys-color-surface-container));
+}
+
+.console .frow.on {
+  background: var(--md-sys-color-secondary-container);
+  border-color: var(--md-sys-color-outline-variant);
+}
+
+.console .frows.t-A .frow.on {
+  background: var(--team-a-container);
+  border-color: color-mix(in srgb, var(--team-a) 45%, transparent);
+}
+
+.console .frows.t-B .frow.on {
+  background: var(--team-b-container);
+  border-color: color-mix(in srgb, var(--team-b) 45%, transparent);
+}
+
+.console .frow.off {
+  background: var(--md-sys-color-surface-container-low);
+  cursor: not-allowed;
+}
+
+.console .frow.off .fname-text,
+.console .frow.off .fid {
+  color: var(--md-sys-color-on-surface);
+  opacity: 0.38;
+}
+
+.console .frow:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+.console .fshot {
+  grid-area: shot;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--shape-s);
+  overflow: hidden;
+  background: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface-variant);
+  display: grid;
+  place-items: center;
+  font-size: var(--type-label-medium);
+}
+
+.console .fshot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.console .fnameline {
+  grid-area: name;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.console .fname-text {
+  font-size: var(--type-body-large);
+  line-height: 24px;
+  font-weight: 500;
+  letter-spacing: 0.15px;
+  color: var(--md-sys-color-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.console .fid {
+  font-size: var(--type-label-small);
+  letter-spacing: 0.5px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.console .fnow {
+  height: 20px;
+  padding: 0 8px;
+  border-radius: var(--shape-full);
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--type-label-small);
+  line-height: 16px;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+
+.console .frows.t-A .fnow {
+  background: var(--team-a);
+  color: #04252a;
+}
+
+.console .frows.t-B .fnow {
+  background: var(--team-b);
+  color: #2b1c02;
+}
+
+.console .fhint {
+  font-size: var(--type-label-small);
+  color: var(--md-sys-color-error);
+}
+
+.console .fctl {
+  grid-area: ctl;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  margin: 0;
+  cursor: default;
+}
+
+.console .fnote {
+  grid-column: 1 / -1;
+  font-size: var(--type-label-medium);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* 计时 */
+.console .timer-display {
+  font-family: 'Consolas', 'Cascadia Mono', 'Roboto Mono', monospace;
+  font-size: 56px;
+  line-height: 64px;
+  font-weight: 400;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--md-sys-color-on-surface);
+}
+
+.console .phase {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--shape-s);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  font-size: var(--type-label-small);
+  letter-spacing: 0.5px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.console .phase.running {
+  color: var(--md-sys-color-on-secondary-container);
+  background: var(--md-sys-color-secondary-container);
+  border-color: transparent;
+}
+
+.console .phase.paused {
+  color: var(--md-sys-color-on-tertiary-container);
+  background: var(--md-sys-color-tertiary-container);
+  border-color: transparent;
+}
+
+.console .preset {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--shape-s);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--type-label-large);
+  cursor: pointer;
+  transition: background-color var(--dur-short) var(--ease-standard);
+}
+
+.console .preset:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+}
+
+/* 摘要 */
+.console .msum {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.console .msum-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 4px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 60%, transparent);
+}
+
+.console .msum-row:last-child {
+  border-bottom: 0;
+}
+
+.console .msum-k {
+  width: 64px;
+  flex: none;
+  font-size: var(--type-label-medium);
+  letter-spacing: 0.5px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.console .msum-name {
+  font-size: var(--type-body-medium);
+  color: var(--md-sys-color-on-surface);
+}
+
+.console .msum-vs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.console .msum-vs em {
+  font-style: normal;
+  font-size: var(--type-label-small);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.console .vt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--shape-xs);
+  font-size: var(--type-label-small);
+  font-weight: 500;
+}
+
+.console .vt.a {
+  background: var(--team-a-container);
+  color: var(--team-a);
+}
+
+.console .vt.b {
+  background: var(--team-b-container);
+  color: var(--team-b);
+}
+
+/* 预览 */
+.console .preview-box {
+  border-radius: var(--shape-m);
+  overflow: hidden;
+  background: var(--md-sys-color-surface-container-lowest);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  content-visibility: auto;
+  contain-intrinsic-size: 480px 270px;
+}
+
+.console .ov-url {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 12px;
+  border-radius: var(--shape-s);
+  background: var(--md-sys-color-surface-container);
+}
+
+.console .ov-url .ov-k {
+  font-size: var(--type-label-medium);
+  color: var(--md-sys-color-on-surface-variant);
+  flex: none;
+}
+
+.console .ov-url code {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'Roboto Mono', 'Consolas', monospace;
+  font-size: var(--type-label-medium);
+  color: var(--md-sys-color-on-surface);
+}
+
+/* OBS */
+.console .obs-status {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--shape-s);
+  font-size: var(--type-label-small);
+  letter-spacing: 0.5px;
+  background: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.console .obs-status.ok {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.console .obs-status.live {
+  background: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+}
+
+.console .obs-error {
+  color: var(--md-sys-color-error);
+  font-size: var(--type-label-medium);
+}
+
+.console .scene {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--shape-s);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--type-label-large);
+  cursor: pointer;
+  transition: background-color var(--dur-short) var(--ease-standard),
+    color var(--dur-short) var(--ease-standard);
+}
+
+.console .scene:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+}
+
+.console .scene.on {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  border-color: transparent;
+}
+
+.console .hint {
+  font-size: var(--type-label-medium);
+  line-height: 18px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.console .hint.warn {
+  color: var(--md-sys-color-tertiary);
+}
+
+.console .hint b {
+  color: var(--md-sys-color-on-surface);
+  font-weight: 500;
+}
+
+/* 设置面板（MD3 全屏/大尺寸对话框的外壳，用 MD3 surface 规格自绘，
+   内部全部是 md-tabs / md-outlined-text-field / md-outlined-segmented-button / md-*-button） */
+.console .sheet-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--md-sys-color-scrim) 62%, transparent);
+  animation: mdFadeIn var(--dur-medium) var(--ease-standard) both;
+}
+
+.console .sheet {
+  width: min(1400px, 100%);
+  max-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  background: var(--md-sys-color-surface-container-high);
+  border-radius: var(--shape-xl);
+  box-shadow: var(--elevation-3);
+  animation: mdDialogIn var(--dur-long) var(--ease-decelerate) both;
+}
+
+.console .sheet > .modal-title {
+  padding: 20px 24px 0;
+}
+
+.console .sheet > .modal-sub {
+  padding: 4px 24px 12px;
+}
+
+.console .sheet > .mtabs {
+  padding: 0 12px;
+  flex: none;
+  height: 48px;
+  min-height: 48px;
+}
+
+.console md-tabs {
+  flex: none;
+}
+
+.console .mbody {
+  padding: 12px 24px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.console .mbody .card {
+  background: var(--md-sys-color-surface-container);
+}
+
+.console .mrow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.console .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px 24px 20px;
+}
+
+/* 向导 */
+.console .wizard-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--md-sys-color-scrim) 60%, transparent);
+  animation: mdFadeIn var(--dur-medium) var(--ease-standard) both;
+}
+
+.console .wizard {
+  width: min(720px, 92vw);
+  background: var(--md-sys-color-surface-container-high);
+  border-radius: var(--shape-xl);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: mdDialogIn var(--dur-long) var(--ease-decelerate) both;
+}
+
+.console .wz-steps {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.console .wz-steps span {
+  height: 28px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--shape-full);
+  background: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--type-label-large);
+}
+
+.console .wz-steps span.on {
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+
+.console .wz-steps span.done {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+/* 提示条 */
+.console .toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  padding: 12px 16px;
+  border-radius: var(--shape-s);
+  background: var(--md-sys-color-inverse-surface);
+  color: var(--md-sys-color-inverse-on-surface);
+  font-size: var(--type-body-medium);
+  animation: mdToastIn var(--dur-medium) var(--ease-decelerate) both;
+  z-index: 90;
+}
+
+/* 素材预览 */
+.console .bg-preview {
+  border-radius: var(--shape-s);
+  overflow: hidden;
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.console .bg-empty {
+  display: grid;
+  place-items: center;
+  min-height: 96px;
+  border-radius: var(--shape-s);
+  background: var(--md-sys-color-surface-container-low);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--type-label-medium);
+}
+
+/* 主题色选择 */
+.console .swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.console .swatch {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: var(--shape-full);
+  border: 2px solid transparent;
+  cursor: pointer;
+  position: relative;
+  transition: transform var(--dur-short) var(--ease-standard),
+    border-color var(--dur-short) var(--ease-standard);
+}
+
+.console .swatch:hover {
+  transform: scale(1.06);
+}
+
+.console .swatch.on {
+  border-color: var(--md-sys-color-on-surface);
+}
+
+.console .swatch.on::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: var(--shape-full);
+  border: 1px solid var(--md-sys-color-outline);
+}
+
+.console .swatch input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.console .theme-reset {
+  margin-left: auto;
+}
+
+/* 滚动条：MD3 的低干扰版本 */
+.console ::-webkit-scrollbar,
+.console-body ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.console ::-webkit-scrollbar-thumb,
+.console-body ::-webkit-scrollbar-thumb {
+  background: var(--md-sys-color-outline-variant);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: var(--shape-full);
+}
+
+.console ::-webkit-scrollbar-track,
+.console-body ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---------------------------------------------------------------------------
+   3. 直播叠加层
+   --------------------------------------------------------------------------- */
+
+.stage {
+  font-family: 'Roboto Flex', 'Segoe UI Variable Text', 'Microsoft YaHei UI', system-ui, sans-serif;
+  color: var(--md-sys-color-on-surface);
+}
+
+.stage .top {
+  background: color-mix(in srgb, var(--md-sys-color-surface-container) 96%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 55%, transparent);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 28px;
+}
+
+.stage .top .name {
+  font-size: var(--type-headline-small);
+  line-height: 32px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--md-sys-color-on-surface);
+}
+
+.stage .top .meta {
+  font-size: var(--type-label-large);
+  letter-spacing: 0.5px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* MD3 的 badge：小圆角 + label-small */
+.stage .live-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--shape-xs);
+  background: var(--md-sys-color-error);
+  color: var(--md-sys-color-on-error);
+  font-size: var(--type-label-small);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.stage .live-chip i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: mdPulse 2s var(--ease-standard) infinite;
+}
+
+.stage .game.black {
+  background: var(--md-sys-color-surface-container-lowest);
+  border-bottom: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 45%, transparent);
+}
+
+.stage .game.transparent {
+  background: transparent;
+  border-bottom: 0;
+}
+
+.stage .feed {
+  background: var(--md-sys-color-surface-container-lowest);
+}
+
+.stage .feed-tag {
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--shape-xs);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--type-label-small);
+  letter-spacing: 0.5px;
+}
+
+/* 右栏 */
+.stage .side {
+  background: color-mix(in srgb, var(--md-sys-color-surface-container) 97%, transparent);
+  border-left: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 55%, transparent);
+}
+
+.stage .side-hd {
+  border-bottom: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 45%, transparent);
+  padding: 20px 20px 16px;
+}
+
+.stage .side-hd .tname {
+  font-size: var(--type-title-large);
+  line-height: 28px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--md-sys-color-on-surface);
+}
+
+.stage .side-hd .tsub {
+  margin-top: 4px;
+  font-size: var(--type-label-medium);
+  letter-spacing: 0.5px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.stage .badge {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--shape-xs);
+  font-family: 'Roboto Mono', monospace;
+  font-size: var(--type-label-medium);
+  font-weight: 500;
+  background: var(--accent-container, var(--md-sys-color-secondary-container));
+  color: var(--accent, var(--md-sys-color-on-secondary-container));
+}
+
+/* 选手槽位：MD3 filled card，选中态用队伍容器色 */
+.stage .slots {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 16px 0;
+}
+
+.stage .slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 152px;
+  padding: 0 16px;
+  border-radius: var(--shape-m);
+  border: 1px solid transparent;
+  background: var(--md-sys-color-surface-container-high);
+  transition: background-color var(--dur-medium) var(--ease-standard),
+    border-color var(--dur-medium) var(--ease-standard);
+}
+
+.stage .slot.off {
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.stage .slot.off .sname {
+  color: var(--md-sys-color-on-surface);
+  opacity: 0.38;
+}
+
+.stage .slot.on {
+  background: var(--accent-container, var(--md-sys-color-secondary-container));
+  border-color: color-mix(in srgb, var(--accent, var(--md-sys-color-primary)) 45%, transparent);
+}
+
+.stage .slot .sav {
+  width: 84px;
+  height: 84px;
+  flex: none;
+  border-radius: var(--shape-s);
+  background: var(--md-sys-color-surface-container-highest);
+  border: 0;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--type-label-small);
+  letter-spacing: 0.5px;
+}
+
+.stage .slot .sav.empty {
+  border: 0;
+}
+
+.stage .slot .sname {
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 500;
+  letter-spacing: 0.15px;
+  color: var(--md-sys-color-on-surface);
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stage .slot .sbody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.stage .slot .chips {
+  display: flex;
+  gap: 6px;
+}
+
+.stage .slot .idx {
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
+  font-size: var(--type-label-small);
+  letter-spacing: 0.5px;
+  color: var(--md-sys-color-on-surface-variant);
+  opacity: 0.7;
+}
+
+/* 状态 chip：MD3 suggestion chip 的静态版 */
+.stage .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: var(--shape-xs);
+  border: 1px solid transparent;
+  background: var(--md-sys-color-surface-container-highest);
+  font-size: var(--type-label-small);
+  line-height: 16px;
+  letter-spacing: 0.5px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.stage .chip i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.stage .chip.alive {
+  background: color-mix(in srgb, #54b054 22%, transparent);
+  color: #9fdca0;
+}
+
+.stage .chip.dead {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.stage .chip.online {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.stage .chip.offline {
+  background: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border-color: transparent;
+}
+
+.stage .slot .now {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 24px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 0 var(--shape-m) 0 var(--shape-s);
+  background: var(--accent, var(--md-sys-color-primary));
+  color: var(--on-accent, var(--md-sys-color-on-primary));
+  font-size: var(--type-label-small);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* 跨队提示：MD3 的 filled card 小尺寸 */
+.stage .side-note {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  padding: 10px 12px;
+  border-radius: var(--shape-s);
+  background: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--type-label-medium);
+  line-height: 18px;
+  border: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 60%, transparent);
+}
+
+/* 解说栏 */
+.stage .band {
+  background: color-mix(in srgb, var(--md-sys-color-surface-container) 96%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 55%, transparent);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 24px;
+}
+
+.stage .casters {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.stage .caster {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stage .caster .cav {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--shape-s);
+  background: var(--md-sys-color-surface-container-highest);
+  border: 0;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.stage .caster .cname {
+  font-size: var(--type-body-large);
+  line-height: 24px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+}
+
+.stage .caster .crole {
+  font-size: var(--type-label-small);
+  letter-spacing: 0.5px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.stage .band-divider {
+  width: 1px;
+  height: 72px;
+  background: color-mix(in srgb, var(--md-sys-color-outline-variant) 55%, transparent);
+}
+
+/* 计时：display-large */
+.stage .timer {
+  margin-left: auto;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.stage .timer .tlabel {
+  font-size: var(--type-label-small);
+  letter-spacing: 0.5px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.stage .timer .tdigits {
+  font-family: 'Roboto Mono', 'Cascadia Mono', 'Consolas', monospace;
+  font-size: 60px;
+  line-height: 68px;
+  font-weight: 400;
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--md-sys-color-on-surface);
+  transition: color var(--dur-medium) var(--ease-standard);
+}
+
+.stage .timer.paused .tdigits {
+  color: var(--md-sys-color-tertiary);
+}
+
+.stage .timer.idle .tdigits {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.stage .timer .tbar {
+  width: 100%;
+  height: 3px;
+  border-radius: var(--shape-full);
+  background: var(--md-sys-color-surface-container-highest);
+  overflow: hidden;
+}
+
+.stage .timer .tbar i {
+  display: block;
+  height: 100%;
+  border-radius: var(--shape-full);
+  background: var(--md-sys-color-primary);
+  transition: width var(--dur-long) var(--ease-standard),
+    background-color var(--dur-medium) var(--ease-standard);
+}
+
+.stage .timer.paused .tbar i {
+  background: var(--md-sys-color-tertiary);
+}
+
+.stage .timer .tmeta {
+  font-size: var(--type-label-small);
+  letter-spacing: 0.5px;
+  color: var(--md-sys-color-on-surface-variant);
+  opacity: 0.8;
+}
+
+.stage .boot {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--type-body-large);
+  letter-spacing: 0.5px;
+}
+
+/* ---------------------------------------------------------------------------
+   4. 动效（MD3 emphasized decelerate 入场）
+   --------------------------------------------------------------------------- */
+
+@keyframes mdFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes mdDialogIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes mdToastIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes mdPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   5. 控制台辅助块（设置弹窗内的编辑器、提示、向导）
+   --------------------------------------------------------------------------- */
+
+.console .boot-full {
+  display: grid;
+  place-items: center;
+  height: 100vh;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--type-body-large);
+  letter-spacing: 0.5px;
+}
+
+.console .row-gap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.console .link {
+  font-size: var(--type-label-large);
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+  padding: 6px 8px;
+  border-radius: var(--shape-s);
+  transition: background-color var(--dur-short) var(--ease-standard);
+}
+
+.console .link:hover {
+  background: color-mix(in srgb, var(--md-sys-color-primary) 12%, transparent);
+}
+
+/* 队伍切换按钮（md 按钮 + 队伍色令牌） */
+.console .team-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.console .team-switch .tbtn {
+  --md-outlined-button-container-shape: 8px;
+  --md-filled-tonal-button-container-shape: 8px;
+  width: 100%;
+}
+
+.console .tbtn-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.console .team-switch .tbtn.a {
+  --md-filled-tonal-button-container-color: var(--team-a-container);
+  --md-filled-tonal-button-label-text-color: var(--team-a);
+  --md-outlined-button-outline-color: color-mix(in srgb, var(--team-a) 35%, transparent);
+  --md-outlined-button-label-text-color: var(--md-sys-color-on-surface-variant);
+}
+
+.console .team-switch .tbtn.b {
+  --md-filled-tonal-button-container-color: var(--team-b-container);
+  --md-filled-tonal-button-label-text-color: var(--team-b);
+  --md-outlined-button-outline-color: color-mix(in srgb, var(--team-b) 35%, transparent);
+  --md-outlined-button-label-text-color: var(--md-sys-color-on-surface-variant);
+}
+
+.console .tbtn-id {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  border-radius: var(--shape-xs);
+  background: color-mix(in srgb, currentColor 18%, transparent);
+  font-family: 'Roboto Mono', monospace;
+  font-size: var(--type-label-medium);
+  font-weight: 500;
+}
+
+.console .tbtn-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 设置弹窗里的选手编辑器 */
+.console .prows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.console .prow {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 12px;
+  border-radius: var(--shape-m);
+  background: var(--md-sys-color-surface-container-low);
+  transition: background-color var(--dur-short) var(--ease-standard);
+}
+
+.console .prow.off {
+  background: color-mix(in srgb, var(--md-sys-color-surface-container-low) 70%, transparent);
+}
+
+.console .pav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.console .pav img,
+.console .pav > span {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--shape-s);
+  object-fit: cover;
+  background: var(--md-sys-color-surface-container-highest);
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.console .pav md-text-button {
+  --md-text-button-container-height: 28px;
+  --md-text-button-label-text-size: 11px;
+}
+
+.console .pmain {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.console .pline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.console .pid {
+  font-size: var(--type-label-small);
+  letter-spacing: 0.5px;
+  color: var(--md-sys-color-on-surface-variant);
+  padding: 2px 6px;
+  border-radius: var(--shape-xs);
+  background: var(--md-sys-color-surface-container-highest);
+}
+
+.console .pmain md-outlined-text-field.nick {
+  flex: 1 1 180px;
+  min-width: 160px;
+}
+
+/* 解说编辑 */
+.console .casters-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.console .crow {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: var(--shape-m);
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.console .cav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.console .cav img,
+.console .cav > span {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--shape-s);
+  object-fit: cover;
+  background: var(--md-sys-color-surface-container-highest);
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.console .cfields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* OBS */
+.console .obs-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.console .obs-actions {
+  padding-bottom: 8px;
+}
+
+.console .scene-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* 主题色角色预览 */
+.console .theme-roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+}
+
+.console .role {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--type-label-medium);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.console .role i {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--shape-xs);
+  border: 1px solid color-mix(in srgb, var(--md-sys-color-outline) 45%, transparent);
+}
+
+.console .swatch.custom {
+  position: relative;
+  overflow: hidden;
+  background: conic-gradient(from 0deg, #f44, #fc4, #4f4, #4cf, #44f, #c4f, #f44);
+}
+
+.console .swatch.custom span {
+  position: absolute;
+  inset: 6px;
+  border-radius: var(--shape-full);
+  border: 2px solid var(--md-sys-color-surface-container-high);
+}
+
+/* 设置弹窗标题区 */
+.console .modal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 24px 0;
+  font-size: var(--type-headline-small);
+  line-height: 32px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+}
+
+.console .modal-title md-text-button {
+  margin-left: auto;
+}
+
+.console .modal-sub {
+  padding: 4px 24px 8px;
+  font-size: var(--type-label-large);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.console .mtabs {
+  --md-primary-tab-container-color: transparent;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  margin: 0 16px 8px;
+}
+
+/* 向导布局 */
+.console .wz-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.console .wz-head h1 {
+  margin: 0;
+  font-size: var(--type-headline-small);
+  line-height: 32px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+}
+
+.console .wz-head p {
+  margin: 4px 0 0;
+  font-size: var(--type-label-large);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.console .wz-body {
+  max-height: min(56vh, 520px);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 4px;
+}
+
+.console .wz-duo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.console .wz-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.console .preview-box iframe {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+}
+/* ---------------- 直播信号源卡片 ---------------- */
+.sgroup { margin: 4px 0 14px; }
+.sgroup-h { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--md-sys-color-on-surface-variant); margin-bottom: 6px; }
+.sbadge { width: 20px; height: 20px; border-radius: 6px; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #0b0f14; }
+.sbadge.a { background: var(--team-a); }
+.sbadge.b { background: var(--team-b); }
+.srow { display: flex; align-items: center; gap: 10px; padding: 5px 8px; border-radius: 10px; }
+.srow + .srow { margin-top: 2px; }
+.srow:hover { background: color-mix(in srgb, var(--md-sys-color-surface-container-highest) 55%, transparent); }
+.sid { width: 26px; flex: none; font-size: 12px; color: var(--md-sys-color-on-surface-variant); }
+.sname { width: 84px; flex: none; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.srow > .sroom, .sroom { width: 168px !important; min-width: 168px !important; max-width: 168px !important; flex: 0 0 168px !important; --md-outlined-text-field-container-height: 40px; --md-outlined-field-container-height: 40px; }
+.schip { width: 64px; flex: none; font-size: 11px; letter-spacing: .04em; text-align: center; padding: 3px 0; border-radius: 999px; border: 1px solid var(--md-sys-color-outline-variant); color: var(--md-sys-color-on-surface-variant); }
+.schip.live { color: #0b0f14; background: #7fd6a8; border-color: transparent; font-weight: 600; }
+.schip.err { color: #2a0d0d; background: #f2a7a7; border-color: transparent; font-weight: 600; }
+.schip.none { opacity: .55; }
+.scopy { margin-left: 2px; min-width: 0 !important; padding: 0 8px; }
+.muted { margin: 6px 0 0; font-size: 12px; line-height: 1.6; color: var(--md-sys-color-on-surface-variant); }
+.muted code { font-size: 12px; padding: 1px 4px; border-radius: 4px; background: var(--md-sys-color-surface-container-highest); }
+.schip.ready { color: #10210f; background: #a8d8a0; border-color: transparent; font-weight: 600; }
+.schip.off { color: var(--md-sys-color-on-surface-variant); opacity: .75; }
+.schip.checking { opacity: .6; }
+
+/* 初始化向导：内容超出视口时整页可上下滚动，避免字段被裁掉 */
+.wizard-mask{ overflow-y:auto; align-items:flex-start; padding:28px 0 48px; }
+.wizard-mask > *{ max-height:none; }
+.wizard{ max-height:none; height:auto; }
+.wizard .mbody, .wizard .wz-body{ overflow:visible; max-height:none; }
+.console .wizard-mask{ overflow-y:auto; align-items:flex-start; padding:28px 0 48px; }
+.console .wizard{ max-height:none; height:auto; }
+.console .wizard .mbody{ overflow:visible; max-height:none; }

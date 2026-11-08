@@ -1,0 +1,28 @@
+const {WebSocket}=require('ws');const fs=require('fs');
+(async()=>{
+  const w=new WebSocket('ws://127.0.0.1:7413/ws');
+  await new Promise(r=>w.once('open',r));
+  w.send(JSON.stringify({t:'cmd',type:'player.room',payload:{playerId:'A1',room:'12345678'}}));
+  await new Promise(r=>setTimeout(r,2500));
+  w.close();
+  const list=await (await fetch('http://127.0.0.1:9333/json/list')).json();
+  const p=list.find(t=>t.type==='page');
+  const ws=new WebSocket(p.webSocketDebuggerUrl,{perMessageDeflate:false,maxPayload:128*1024*1024});
+  await new Promise(r=>ws.once('open',r));
+  let id=0;const pend=new Map();
+  ws.on('message',d=>{const m=JSON.parse(Buffer.isBuffer(d)?d.toString():String(d));if(m.id&&pend.has(m.id)){pend.get(m.id)(m);pend.delete(m.id);}});
+  const send=(mm,pr={})=>new Promise(res=>{const i=++id;pend.set(i,res);ws.send(JSON.stringify({id:i,method:mm,params:pr}));});
+  const ev=async e=>{const r=await send('Runtime.evaluate',{expression:e,returnByValue:true});return r.result?.result?.value;};
+  await send('Emulation.setDeviceMetricsOverride',{width:1680,height:1020,deviceScaleFactor:1,mobile:false});
+  await send('Page.navigate',{url:'http://127.0.0.1:7413/?settings=1'});
+  await new Promise(r=>setTimeout(r,4000));
+  const clicked = await ev(`(()=>{const t=[...document.querySelectorAll('md-primary-tab')].find(e=>e.textContent.includes('直播信号源'));if(!t)return 'no-tab';t.click();return 'ok'})()`);
+  await new Promise(r=>setTimeout(r,2500));
+  console.log('tab click:', clicked);
+  console.log('chips:', await ev(`[...document.querySelectorAll('.schip')].map(e=>e.textContent).join(',')`));
+  const shot=await send('Page.captureScreenshot',{format:'png'});
+  fs.writeFileSync('D:/AI Working/app/stream-settings.png',Buffer.from(shot.result.data,'base64'));
+  const j=await (await fetch('http://127.0.0.1:7413/api/streams')).json();
+  console.log('A1:', JSON.stringify(j.streams.find(s=>s.playerId==='A1')));
+  ws.close();
+})();

@@ -1,0 +1,25 @@
+const http=require('http'),WS=require('ws'),fs=require('fs');
+const get=u=>new Promise((res,rej)=>{const rq=http.request(u,{method:'PUT'},r=>{let d='';r.on('data',c=>d+=c);r.on('end',()=>res(d))});rq.on('error',rej);rq.end()});
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+(async()=>{
+ const j=JSON.parse(await get('http://127.0.0.1:9333/json/new?http%3A%2F%2F127.0.0.1%3A7412%2Foverlay.html'));
+ const s=new WS(j.webSocketDebuggerUrl,{perMessageDeflate:false});let n=0;const q={};
+ const c=(m,p={})=>new Promise(r=>{const i=++n;q[i]=r;s.send(JSON.stringify({id:i,method:m,params:p}))});
+ s.on('message',m=>{const x=JSON.parse(m);if(x.id&&q[x.id]){q[x.id](x.result);delete q[x.id]}});
+ await new Promise(r=>s.on('open',r));
+ await c('Runtime.enable');
+ await c('Emulation.setDeviceMetricsOverride',{width:1920,height:1080,deviceScaleFactor:1,mobile:false});
+ await sleep(3200);
+ const ws2=new WS('ws://127.0.0.1:7412/ws');
+ await new Promise(r=>ws2.on('open',r));
+ ws2.send(JSON.stringify({t:'cmd',type:'player.focus',payload:{playerId:'A2'}}));
+ await sleep(1100);
+ const r1=await c('Runtime.evaluate',{returnByValue:true,expression:`(()=>{const m=document.querySelector('.switch-mask');const nm=document.querySelector('.switch-name');return{mask:!!m,name:nm?nm.textContent:null,op:getComputedStyle(m||document.body).opacity}})()`});
+ console.log('t=1.1s',JSON.stringify(r1.result.value));
+ const shot=await c('Page.captureScreenshot',{format:'png'});
+ fs.writeFileSync('D:/AI Working/app/switch-shot.png',Buffer.from(shot.data,'base64'));
+ await sleep(2600);
+ const r2=await c('Runtime.evaluate',{returnByValue:true,expression:`(()=>!!document.querySelector('.switch-mask'))()`});
+ console.log('t=3.7s mask:',r2.result.value);
+ process.exit(0);
+})().catch(e=>{console.log('ERR',e.message);process.exit(1)});

@@ -1,0 +1,245 @@
+/* ============================================================================
+   Fluent 2 设计令牌（暗色主题）
+   数值取自 @fluentui/tokens 1.0.0-alpha.24 的 webDarkTheme
+   —— 颜色 / 字体 / 圆角 / 间距 / 阴影 / 动效曲线
+   ============================================================================ */
+
+:root {
+  /* ---- 中性背景阶梯（Fluent 2 dark）------------------------------------ */
+  --colorNeutralBackground1: #292929;
+  --colorNeutralBackground1Hover: #3d3d3d;
+  --colorNeutralBackground1Pressed: #1f1f1f;
+  --colorNeutralBackground1Selected: #383838;
+
+  --colorNeutralBackground2: #1f1f1f;
+  --colorNeutralBackground2Hover: #333333;
+  --colorNeutralBackground2Pressed: #141414;
+
+  --colorNeutralBackground3: #141414;
+  --colorNeutralBackground4: #0a0a0a;
+  --colorNeutralBackground5: #000000;
+  --colorNeutralBackground6: #333333;
+
+  --colorNeutralBackgroundAlpha: rgba(26, 26, 26, 0.5);
+  --colorNeutralBackgroundAlpha2: rgba(31, 31, 31, 0.7);
+  --colorBackgroundOverlay: rgba(0, 0, 0, 0.5);
+
+  /* ---- 前景 ------------------------------------------------------------- */
+  --colorNeutralForeground1: #ffffff;
+  --colorNeutralForeground2: #d6d6d6;
+  --colorNeutralForeground3: #adadad;
+  --colorNeutralForeground4: #999999;
+  --colorNeutralForegroundDisabled: #5c5c5c;
+  --colorNeutralForeground1Static: #242424;
+
+  /* ---- 描边 ------------------------------------------------------------- */
+  --colorNeutralStroke1: #666666;
+  --colorNeutralStroke1Hover: #757575;
+  --colorNeutralStroke2: #525252;
+  --colorNeutralStroke3: #3d3d3d;
+  --colorNeutralStrokeAccessible: #adadad;
+  --colorNeutralStrokeAccessibleHover: #bdbdbd;
+  --colorNeutralStencil1: #575757;
+  --colorNeutralStencil2: #333333;
+  --colorStrokeFocus1: #000000;
+  --colorStrokeFocus2: #ffffff;
+
+  /* ---- 品牌色 ----------------------------------------------------------- */
+  --colorBrandBackground: #115ea3;
+  --colorBrandBackgroundHover: #0f6cbd;
+  --colorBrandBackgroundPressed: #0c3b5e;
+  --colorBrandBackground2: #082338;
+  --colorBrandStroke1: #479ef5;
+  --colorBrandStroke2: #0e4775;
+  --colorBrandForeground1: #479ef5;
+  --colorBrandForeground2: #62abf5;
+  --colorNeutralForegroundOnBrand: #ffffff;
+
+  /* ---- 调色板（队伍与状态语义）---------------------------------------- */
+  --colorPaletteTealBorderActive: #4cb4b7;
+  --colorPaletteTealForeground1: #9bd9db;
+  --colorPaletteTealForeground2: #9bd9db;
+  --colorPaletteTealBackground1: #02494c;
+  --colorPaletteTealBackground2: #02494c;
+
+  --colorPaletteMarigoldBorderActive: #f2c661;
+  --colorPaletteMarigoldBorder1: #eaa300;
+  --colorPaletteMarigoldForeground1: #f2c661;
+  --colorPaletteMarigoldForeground2: #f9e2ae;
+  --colorPaletteMarigoldBackground1: #463100;
+  --colorPaletteMarigoldBackground2: #835b00;
+
+  --colorPaletteGreenForeground1: #54b054;
+  --colorPaletteGreenBackground1: #052505;
+  --colorPaletteGreenBorder2: #9fd89f;
+
+  --colorPaletteRedForeground1: #e37d80;
+  --colorPaletteRedBackground1: #3f1011;
+  --colorPaletteRedBackground3: #d13438;
+  --colorPaletteRedBorder2: #e37d80;
+
+  --colorPaletteDarkOrangeForeground1: #e9835e;
+
+  /* ---- 字体 ------------------------------------------------------------- */
+  --fontFamilyBase: 'Segoe UI Variable Text', 'Segoe UI', 'Microsoft YaHei UI',
+    'Microsoft YaHei', 'PingFang SC', sans-serif;
+  --fontFamilyDisplay: 'Segoe UI Variable Display', 'Segoe UI',
+    'Microsoft YaHei UI', sans-serif;
+  --fontFamilyNumeric: Bahnschrift, 'Segoe UI Variable Text', 'Segoe UI',
+    'Microsoft YaHei UI', sans-serif;
+  --fontFamilyMonospace: Consolas, 'Courier New', monospace;
+
+  --fontSizeBase100: 10px;
+  --fontSizeBase200: 12px;
+  --fontSizeBase300: 14px;
+  --fontSizeBase400: 16px;
+  --fontSizeBase500: 20px;
+  --fontSizeBase600: 24px;
+  --fontSizeHero700: 28px;
+  --fontSizeHero800: 32px;
+  --fontSizeHero900: 40px;
+
+  --lineHeightBase100: 14px;
+  --lineHeightBase200: 16px;
+  --lineHeightBase300: 20px;
+  --lineHeightBase400: 22px;
+  --lineHeightBase500: 28px;
+  --lineHeightBase600: 32px;
+  --lineHeightHero700: 36px;
+  --lineHeightHero800: 40px;
+  --lineHeightHero900: 52px;
+
+  --fontWeightRegular: 400;
+  --fontWeightMedium: 500;
+  --fontWeightSemibold: 600;
+  --fontWeightBold: 700;
+
+  /* ---- 圆角 / 描边宽度 -------------------------------------------------- */
+  --borderRadiusSmall: 2px;
+  --borderRadiusMedium: 4px;
+  --borderRadiusLarge: 6px;
+  --borderRadiusXLarge: 8px;
+  --strokeWidthThin: 1px;
+  --strokeWidthThick: 2px;
+
+  /* ---- 间距 ------------------------------------------------------------- */
+  --spacingHorizontalXS: 4px;
+  --spacingHorizontalSNudge: 6px;
+  --spacingHorizontalS: 8px;
+  --spacingHorizontalMNudge: 10px;
+  --spacingHorizontalM: 12px;
+  --spacingHorizontalL: 16px;
+  --spacingHorizontalXL: 20px;
+  --spacingHorizontalXXL: 24px;
+
+  /* ---- 阴影 ------------------------------------------------------------- */
+  --shadow2: 0 0 2px rgba(0, 0, 0, 0.24), 0 1px 2px rgba(0, 0, 0, 0.28);
+  --shadow4: 0 0 2px rgba(0, 0, 0, 0.24), 0 2px 4px rgba(0, 0, 0, 0.28);
+  --shadow8: 0 0 2px rgba(0, 0, 0, 0.24), 0 4px 8px rgba(0, 0, 0, 0.28);
+  --shadow16: 0 0 2px rgba(0, 0, 0, 0.24), 0 8px 16px rgba(0, 0, 0, 0.28);
+  --shadow28: 0 0 8px rgba(0, 0, 0, 0.24), 0 14px 28px rgba(0, 0, 0, 0.28);
+  --shadow64: 0 0 8px rgba(0, 0, 0, 0.24), 0 32px 64px rgba(0, 0, 0, 0.28);
+
+  /* ---- 动效 ------------------------------------------------------------- */
+  --durationUltraFast: 50ms;
+  --durationFaster: 100ms;
+  --durationFast: 150ms;
+  --durationNormal: 200ms;
+  --durationGentle: 250ms;
+  --durationSlow: 300ms;
+
+  --curveAccelerateMax: cubic-bezier(0.9, 0.1, 1, 0.2);
+  --curveAccelerateMid: cubic-bezier(1, 0, 1, 1);
+  --curveDecelerateMax: cubic-bezier(0.1, 0.9, 0.2, 1);
+  --curveDecelerateMid: cubic-bezier(0, 0, 0, 1);
+  --curveDecelerateMin: cubic-bezier(0.33, 0, 0.1, 1);
+  --curveEasyEase: cubic-bezier(0.33, 0, 0.67, 1);
+  --curveEasyEaseMax: cubic-bezier(0.8, 0, 0.2, 1);
+  --curveLinear: cubic-bezier(0, 0, 1, 1);
+
+  /* Fluent 常用组合：进入用减速曲线，退出用加速曲线 */
+  --motionEnter: var(--durationGentle) var(--curveDecelerateMax);
+  --motionExit: var(--durationFast) var(--curveAccelerateMax);
+  --motionFluid: var(--durationFast) var(--curveDecelerateMid);
+
+  /* ========================================================================
+     兼容层：早期样式表使用的 --l0..--alive 变量，全部映射到 Fluent 令牌
+     ======================================================================== */
+  --l0: var(--colorNeutralBackground3);
+  --l1: var(--colorNeutralBackground2);
+  --l2: var(--colorNeutralBackground1);
+  --l3: var(--colorNeutralBackground6);
+  --hair: var(--colorNeutralStroke3);
+  --hair2: #2b2b2b;
+  --t1: var(--colorNeutralForeground1);
+  --t2: var(--colorNeutralForeground2);
+  --t3: var(--colorNeutralForeground3);
+  --a: var(--colorPaletteTealBorderActive);
+  --a-b: var(--colorPaletteTealForeground1);
+  --a-d: var(--colorPaletteTealBackground1);
+  --b: var(--colorPaletteMarigoldBorder1);
+  --b-b: var(--colorPaletteMarigoldForeground1);
+  --b-d: var(--colorPaletteMarigoldBackground1);
+  --gold: var(--colorPaletteGoldForeground2, #ecdfa5);
+  --danger: var(--colorPaletteRedForeground1);
+  --alive: var(--colorPaletteGreenForeground1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background: transparent;
+  height: 100%;
+}
+
+body {
+  font-family: var(--fontFamilyBase);
+  font-size: var(--fontSizeBase300);
+  line-height: var(--lineHeightBase300);
+  color: var(--colorNeutralForeground1);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Fluent 的等宽数字排版：数字族 + 表格数字，避免计时跳动 */
+.num {
+  font-family: var(--fontFamilyNumeric);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  letter-spacing: 0.01em;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  outline: none;
+}
+
+img {
+  display: block;
+}
+
+/* Fluent 2 焦点指示器：外白内黑的 2px 双环 */
+:focus-visible {
+  outline: 2px solid var(--colorStrokeFocus2);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

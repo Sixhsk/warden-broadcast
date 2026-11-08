@@ -1,0 +1,81 @@
+{
+  "name": "warden-broadcast",
+  "productName": "WardenBroadcast",
+  "version": "0.1.0",
+  "private": true,
+  "description": "明日方舟：卫戍协议 赛事直播 UI（控制台 + OBS 叠加层）",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build:web": "vite build",
+    "build:server": "esbuild server/server.mjs --bundle --platform=node --format=cjs --target=node20 --external:bufferutil --external:utf-8-validate --outfile=dist-server/server.cjs",
+    "build": "npm run build:web && npm run build:server",
+    "start": "node server/server.mjs --open",
+    "serve": "node server/server.mjs",
+    "dist": "npm run build && electron-builder --win msi --x64"
+  },
+  "dependencies": {
+    "@material/material-color-utilities": "^0.3.0",
+    "@material/web": "^2.4.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@fluentui/tokens": "^1.0.0-alpha.24",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11"
+  },
+  "build": {
+    "appId": "com.warden.broadcast",
+    "productName": "WardenBroadcast",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**/*",
+      "dist-server/server.cjs",
+      "dist/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "msi",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "WardenBroadcast-${version}-x64.${ext}",
+      "signAndEditExecutable": false,
+      "sign": false,
+      "icon": "build/icon.ico"
+    },
+    "msi": {
+      "oneClick": false,
+      "perMachine": false,
+      "upgradeCode": "8f2c1d54-6a3b-4f19-9c7e-2b5d84e1a6c3",
+      "additionalLightArgs": [
+        "-sval"
+      ],
+      "warningsAsErrors": false,
+      "runAfterFinish": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "electronDownload": {
+      "mirror": "https://npmmirror.com/mirrors/electron/"
+    },
+    "asar": false
+  },
+  "author": "LSZ"
+}

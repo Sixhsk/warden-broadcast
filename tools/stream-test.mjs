@@ -1,0 +1,31 @@
+import WebSocket from 'ws';
+const PORT = process.env.PORT || 7413;
+const ROOM = process.env.ROOM || '12345678';
+const base = `http://127.0.0.1:${PORT}`;
+const ws = new WebSocket(`ws://127.0.0.1:${PORT}/ws`);
+await new Promise((r, j) => { ws.once('open', r); ws.once('error', j); });
+let id = 0; const pend = new Map();
+ws.on('message', (d) => { const m = JSON.parse(d.toString()); if (m.t === 'ack' && pend.has(m.id)) { pend.get(m.id)(m); pend.delete(m.id); } });
+const ack = (type, payload) => new Promise((res, rej) => { const i = ++id; pend.set(i, res); ws.send(JSON.stringify({ t: 'cmd', type, payload, id: i })); setTimeout(() => rej(new Error('timeout ' + type)), 8000); });
+ws.send(JSON.stringify({ t: "cmd", type: "player.room", payload: { playerId: "A1", room: ROOM } }));
+console.log("bind room sent");
+await new Promise((r) => setTimeout(r, 300));
+const ctl = new AbortController();
+const t0 = Date.now();
+const res = await fetch(`${base}/stream/A1.flv`, { signal: ctl.signal });
+console.log('proxy status:', res.status, res.headers.get('content-type'));
+const reader = res.body.getReader();
+let got = 0, first = null;
+while (Date.now() - t0 < 4000) {
+  const { value, done } = await reader.read();
+  if (done) break;
+  if (!first) first = Buffer.from(value.slice(0, 3)).toString();
+  got += value.length;
+}
+ctl.abort();
+console.log('first bytes:', first, '| bytes in 4s:', got);
+const st = await (await fetch(`${base}/api/streams`)).json();
+const a1 = st.streams.find((s) => s.playerId === 'A1');
+console.log('status row:', JSON.stringify(a1));
+ws.close();
+process.exit(got > 10000 && first === 'FLV' ? 0 : 1);

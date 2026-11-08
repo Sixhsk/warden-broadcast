@@ -1,0 +1,58 @@
+# ---- 依赖 ----
+node_modules/
+
+# ---- 构建产物 ----
+dist/
+dist-server/
+release/
+
+# ---- build 目录只保留图标 ----
+build/*
+!build/icon.ico
+
+# ---- 打包 / 构建缓存 ----
+.ecache/
+.temp/
+.tmp/
+.tmpdata*/
+.msitest/
+.wixtest/
+.simdata/
+
+# ---- 本地浏览器调试 profile（headless CDP）----
+.cdp/
+.cdp2/
+.cdp4/
+.ud/
+.ud2/
+.ud3/
+.cdp*/
+
+# ---- 运行时数据（每台机器自己生成）----
+data/
+userdata/
+
+# ---- 日志与调试残留 ----
+*.log
+.asarprobe.txt
+cdp-*.mjs
+/*.png
+
+# ---- 编辑器 / 系统 ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- 敏感信息 ----
+.env
+.env.*
+*.pem
+*.pfx
+secrets.*
+# ---- 含本机/账号信息的私人脚本，不随仓库发布 ----
+tools/obs-apply.cjs
+tools/obs-apply2.cjs
+tools/bili-frame.cjs
+tools/.sim-*.log

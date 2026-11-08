@@ -1,0 +1,1230 @@
+/* ============================================================================
+   Fluent 2 视觉层
+   在既有组件结构上套用 Fluent 2 的表面、描边、控件、焦点与动效规范。
+   规则分两段：A. 控制台（.console-body 作用域）  B. 直播叠加层（.stage 作用域）
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   A. 控制台
+   --------------------------------------------------------------------------- */
+
+.console-body {
+  background: var(--colorNeutralBackground3);
+  color: var(--colorNeutralForeground1);
+  font-family: var(--fontFamilyBase);
+  font-size: var(--fontSizeBase300);
+  line-height: var(--lineHeightBase300);
+}
+
+/* ---- 顶栏：Fluent Header 表面 -------------------------------------------- */
+.console .cbar {
+  height: 56px;
+  padding: 0 var(--spacingHorizontalXXL);
+  background: var(--colorNeutralBackground2);
+  border-bottom: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+}
+
+.console .cbar .brand {
+  font-family: var(--fontFamilyDisplay);
+  font-size: var(--fontSizeBase400);
+  line-height: var(--lineHeightBase400);
+  font-weight: var(--fontWeightSemibold);
+  letter-spacing: 0;
+  color: var(--colorNeutralForeground1);
+}
+
+.console .cbar .brand .dot {
+  width: 6px;
+  height: 16px;
+  border-radius: var(--borderRadiusSmall);
+  background: var(--colorBrandStroke1);
+}
+
+.console .cbar .brand em {
+  font-size: var(--fontSizeBase200);
+  line-height: var(--lineHeightBase200);
+  font-weight: var(--fontWeightRegular);
+  letter-spacing: 0.08em;
+  color: var(--colorNeutralForeground3);
+}
+
+.console .cbar .conn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacingHorizontalS);
+  height: 24px;
+  padding: 0 var(--spacingHorizontalS);
+  border-radius: var(--borderRadiusMedium);
+  font-size: var(--fontSizeBase200);
+  line-height: var(--lineHeightBase200);
+  background: var(--colorNeutralBackground1);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  color: var(--colorNeutralForeground2);
+  transition: color var(--motionFluid), background var(--motionFluid),
+    border-color var(--motionFluid);
+}
+
+.console .cbar .conn.ok {
+  color: var(--colorPaletteGreenForeground1);
+  border-color: var(--colorNeutralStroke3);
+}
+
+.console .cbar .conn.bad {
+  color: var(--colorPaletteRedForeground1);
+}
+
+.console .cbar .ver {
+  font-family: var(--fontFamilyMonospace);
+  font-size: var(--fontSizeBase100);
+  letter-spacing: 0.06em;
+  color: var(--colorNeutralForeground3);
+}
+
+/* ---- 布局 ---------------------------------------------------------------- */
+.console .cmain {
+  padding: var(--spacingHorizontalXXL) var(--spacingHorizontalXXL)
+    var(--spacingHorizontalXXL);
+  gap: var(--spacingHorizontalXL);
+}
+
+/* ---- 卡片：Fluent Card --------------------------------------------------- */
+.console .card {
+  background: var(--colorNeutralBackground1);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  border-radius: var(--borderRadiusLarge);
+  box-shadow: var(--shadow2);
+  overflow: hidden;
+}
+
+.console .card > header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacingHorizontalM);
+  padding: var(--spacingHorizontalM) var(--spacingHorizontalL);
+  border-bottom: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  background: var(--colorNeutralBackground1);
+}
+
+.console .card h2 {
+  font-family: var(--fontFamilyBase);
+  font-size: var(--fontSizeBase300);
+  line-height: var(--lineHeightBase300);
+  font-weight: var(--fontWeightSemibold);
+  letter-spacing: 0;
+  color: var(--colorNeutralForeground1);
+}
+
+.console .card header p {
+  font-size: var(--fontSizeBase200);
+  line-height: var(--lineHeightBase200);
+  color: var(--colorNeutralForeground3);
+}
+
+.console .card-body {
+  padding: var(--spacingHorizontalL);
+  gap: var(--spacingHorizontalMNudge);
+}
+
+/* ---- 表单控件：Fluent Input / Dropdown ---------------------------------- */
+.console .field > span {
+  font-size: var(--fontSizeBase200);
+  line-height: var(--lineHeightBase200);
+  font-weight: var(--fontWeightMedium);
+  letter-spacing: 0;
+  color: var(--colorNeutralForeground3);
+}
+
+.console input,
+.console select {
+  height: 32px;
+  padding: 0 var(--spacingHorizontalMNudge);
+  background: var(--colorNeutralBackground2);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke1);
+  border-radius: var(--borderRadiusMedium);
+  color: var(--colorNeutralForeground1);
+  font-size: var(--fontSizeBase300);
+  transition: border-color var(--motionFluid), background var(--motionFluid);
+}
+
+.console input::placeholder {
+  color: var(--colorNeutralForeground4);
+}
+
+.console input:hover,
+.console select:hover {
+  border-color: var(--colorNeutralStroke1Hover);
+  background: var(--colorNeutralBackground2Hover);
+}
+
+/* Fluent 输入框聚焦：整体 1px 品牌色 + 底部加粗 2px */
+.console input:focus,
+.console select:focus {
+  border-color: var(--colorBrandStroke1);
+  border-bottom-width: var(--strokeWidthThick);
+  background: var(--colorNeutralBackground2);
+}
+
+/* ---- 按钮：Fluent Button（secondary / primary / danger / subtle）-------- */
+.console .btn {
+  height: 32px;
+  padding: 0 var(--spacingHorizontalM);
+  border-radius: var(--borderRadiusMedium);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke1);
+  background: var(--colorNeutralBackground1);
+  color: var(--colorNeutralForeground1);
+  font-size: var(--fontSizeBase300);
+  font-weight: var(--fontWeightMedium);
+  letter-spacing: 0;
+  cursor: pointer;
+  transition: background var(--motionFluid), border-color var(--motionFluid),
+    color var(--motionFluid);
+}
+
+.console .btn:hover:not(:disabled) {
+  background: var(--colorNeutralBackground1Hover);
+  border-color: var(--colorNeutralStroke1Hover);
+}
+
+.console .btn:active:not(:disabled) {
+  background: var(--colorNeutralBackground1Pressed);
+}
+
+.console .btn:disabled {
+  color: var(--colorNeutralForegroundDisabled);
+  border-color: var(--colorNeutralStroke3);
+  background: var(--colorNeutralBackground2);
+  cursor: not-allowed;
+}
+
+.console .btn.primary,
+.console .btn.solid {
+  background: var(--colorBrandBackground);
+  border-color: var(--colorBrandBackground);
+  color: var(--colorNeutralForegroundOnBrand);
+}
+
+.console .btn.primary:hover:not(:disabled),
+.console .btn.solid:hover:not(:disabled) {
+  background: var(--colorBrandBackgroundHover);
+  border-color: var(--colorBrandBackgroundHover);
+}
+
+.console .btn.primary:active:not(:disabled),
+.console .btn.solid:active:not(:disabled) {
+  background: var(--colorBrandBackgroundPressed);
+}
+
+.console .btn.danger {
+  color: var(--colorPaletteRedForeground1);
+  border-color: var(--colorNeutralStroke1);
+}
+
+.console .btn.danger:hover:not(:disabled) {
+  background: var(--colorPaletteRedBackground1);
+  border-color: var(--colorPaletteRedBorder2);
+}
+
+.console .btn.tiny {
+  height: 24px;
+  padding: 0 var(--spacingHorizontalS);
+  font-size: var(--fontSizeBase200);
+}
+
+/* ---- 分段控件：Fluent Segmented ----------------------------------------- */
+.console .seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 26px;
+  padding: 2px;
+  background: var(--colorNeutralBackground2);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  border-radius: var(--borderRadiusMedium);
+}
+
+.console .seg button {
+  height: 20px;
+  padding: 0 var(--spacingHorizontalS);
+  border: 0;
+  border-radius: var(--borderRadiusSmall);
+  background: transparent;
+  color: var(--colorNeutralForeground3);
+  font-size: var(--fontSizeBase200);
+  font-weight: var(--fontWeightMedium);
+  letter-spacing: 0;
+  cursor: pointer;
+  transition: background var(--motionFluid), color var(--motionFluid);
+}
+
+.console .seg button:hover {
+  background: var(--colorNeutralBackground2Hover);
+  color: var(--colorNeutralForeground1);
+}
+
+.console .seg button.on {
+  background: var(--colorNeutralBackground1Selected);
+  color: var(--colorNeutralForeground1);
+  box-shadow: var(--shadow2);
+}
+
+/* 第二段（在线 / Offline）里被选中的 Offline 用告警色 */
+.console .seg button.on:nth-child(2) {
+  background: var(--colorPaletteRedBackground1);
+  color: var(--colorPaletteRedForeground1);
+  box-shadow: none;
+}
+
+/* ---- 队伍切换：Fluent 选项卡式选择 -------------------------------------- */
+.console .team-switch {
+  gap: var(--spacingHorizontalS);
+}
+
+.console .tsw {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacingHorizontalS);
+  height: 40px;
+  padding: 0 var(--spacingHorizontalM);
+  background: var(--colorNeutralBackground2);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  border-left: 3px solid transparent;
+  border-radius: var(--borderRadiusMedium);
+  color: var(--colorNeutralForeground2);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--motionFluid), border-color var(--motionFluid),
+    color var(--motionFluid), box-shadow var(--motionFluid);
+}
+
+.console .tsw:hover {
+  background: var(--colorNeutralBackground2Hover);
+  color: var(--colorNeutralForeground1);
+}
+
+.console .tsw b {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--borderRadiusSmall);
+  font-family: var(--fontFamilyNumeric);
+  font-size: var(--fontSizeBase100);
+  font-weight: var(--fontWeightSemibold);
+  line-height: 1;
+}
+
+.console .tsw.A b {
+  background: color-mix(in srgb, var(--a) 22%, transparent);
+  color: var(--a-b);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--a) 55%, transparent);
+}
+
+.console .tsw.B b {
+  background: color-mix(in srgb, var(--b) 22%, transparent);
+  color: var(--b-b);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--b) 55%, transparent);
+}
+
+.console .tsw span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fontSizeBase300);
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorNeutralForeground2);
+}
+
+.console .tsw.on {
+  background: var(--colorNeutralBackground1Selected);
+  color: var(--colorNeutralForeground1);
+}
+
+.console .tsw.on span {
+  color: var(--colorNeutralForeground1);
+}
+
+.console .tsw.A.on {
+  border-color: color-mix(in srgb, var(--a) 60%, var(--colorNeutralStroke2));
+  border-left-color: var(--a);
+  box-shadow: var(--shadow2);
+}
+
+.console .tsw.B.on {
+  border-color: color-mix(in srgb, var(--b) 60%, var(--colorNeutralStroke2));
+  border-left-color: var(--b);
+  box-shadow: var(--shadow2);
+}
+
+/* ---- 选手行：Fluent ListItem + Card 混合 -------------------------------- */
+.console .frows {
+  gap: var(--spacingHorizontalXS);
+}
+
+.console .frow {
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  grid-template-areas: 'shot name ctl';
+  align-items: center;
+  gap: var(--spacingHorizontalM);
+  min-height: 56px;
+}
+
+.console .fctl {
+  margin-top: 0;
+  flex-wrap: nowrap;
+  align-self: center;
+}
+
+.console .frow {
+  padding: var(--spacingHorizontalS) var(--spacingHorizontalM)
+    var(--spacingHorizontalS) var(--spacingHorizontalMNudge);
+  background: var(--colorNeutralBackground2);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  border-left: 3px solid transparent;
+  border-radius: var(--borderRadiusLarge);
+  cursor: pointer;
+  transition: background var(--motionFluid), border-color var(--motionFluid),
+    box-shadow var(--motionFluid);
+}
+
+.console .frow:hover:not(.off) {
+  background: var(--colorNeutralBackground1);
+  border-top-color: var(--colorNeutralStroke2);
+  border-right-color: var(--colorNeutralStroke2);
+  border-bottom-color: var(--colorNeutralStroke2);
+  box-shadow: var(--shadow2);
+}
+
+.console .frow:hover:not(.off):not(.on) {
+  border-left-color: var(--colorNeutralStroke2);
+}
+
+.console .frow.on {
+  background: color-mix(in srgb, var(--colorPaletteTealBackground1) 26%, var(--colorNeutralBackground1));
+  border-color: var(--colorPaletteTealBorderActive);
+  border-left-color: var(--colorPaletteTealBorderActive);
+  box-shadow: var(--shadow4);
+}
+
+.console .frow.off {
+  opacity: 1;
+  background: var(--colorNeutralBackground2);
+  border-color: var(--colorNeutralStroke3);
+  cursor: not-allowed;
+}
+
+.console .frow.off .fname-text,
+.console .frow.off .fid {
+  color: var(--colorNeutralForegroundDisabled);
+}
+
+.console .frow:focus-visible {
+  outline: 2px solid var(--colorStrokeFocus2);
+  outline-offset: 2px;
+}
+
+.console .fshot {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--borderRadiusMedium);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+  background: var(--colorNeutralBackground6);
+  overflow: hidden;
+  color: var(--colorNeutralForeground3);
+  font-family: var(--fontFamilyNumeric);
+  font-size: var(--fontSizeBase200);
+}
+
+.console .frow.on .fshot {
+  border-color: var(--colorPaletteTealBorderActive);
+}
+
+.console .fname-text {
+  font-size: var(--fontSizeBase400);
+  line-height: var(--lineHeightBase400);
+  font-weight: var(--fontWeightSemibold);
+  color: var(--colorNeutralForeground1);
+}
+
+.console .fid {
+  font-size: var(--fontSizeBase100);
+  letter-spacing: 0.06em;
+  color: var(--colorNeutralForeground4);
+}
+
+.console .fnow {
+  height: 18px;
+  padding: 0 var(--spacingHorizontalSNudge);
+  border-radius: var(--borderRadiusSmall);
+  background: var(--colorPaletteTealBackground1);
+  color: var(--colorPaletteTealForeground1);
+  border: var(--strokeWidthThin) solid var(--colorPaletteTealBorderActive);
+  font-size: var(--fontSizeBase100);
+  font-weight: var(--fontWeightSemibold);
+  letter-spacing: 0.04em;
+}
+
+.console .fhint {
+  font-size: var(--fontSizeBase100);
+  color: var(--colorPaletteRedForeground1);
+  letter-spacing: 0.02em;
+}
+
+.console .fnote {
+  font-size: var(--fontSizeBase200);
+  color: var(--colorNeutralForeground3);
+}
+
+/* ---- 计时 ---------------------------------------------------------------- */
+.console .timer-display {
+  font-family: var(--fontFamilyNumeric);
+  font-size: 56px;
+  line-height: 64px;
+  font-weight: var(--fontWeightSemibold);
+  letter-spacing: 0.02em;
+  color: var(--colorNeutralForeground1);
+  font-variant-numeric: tabular-nums;
+}
+
+.console .phase {
+  height: 22px;
+  padding: 0 var(--spacingHorizontalS);
+  border-radius: var(--borderRadiusSmall);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  background: var(--colorNeutralBackground2);
+  font-size: var(--fontSizeBase100);
+  letter-spacing: 0.08em;
+  color: var(--colorNeutralForeground3);
+}
+
+.console .phase.running {
+  color: var(--colorPaletteGreenForeground1);
+  border-color: var(--colorNeutralStroke3);
+}
+
+.console .phase.paused {
+  color: var(--colorPaletteMarigoldForeground1);
+}
+
+.console .preset {
+  height: 26px;
+  padding: 0 var(--spacingHorizontalS);
+  border-radius: var(--borderRadiusMedium);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  background: var(--colorNeutralBackground2);
+  color: var(--colorNeutralForeground2);
+  font-size: var(--fontSizeBase200);
+  cursor: pointer;
+  transition: background var(--motionFluid), border-color var(--motionFluid);
+}
+
+.console .preset:hover {
+  background: var(--colorNeutralBackground2Hover);
+  border-color: var(--colorNeutralStroke2);
+  color: var(--colorNeutralForeground1);
+}
+
+/* ---- 摘要表 -------------------------------------------------------------- */
+.console .msum {
+  gap: 0;
+}
+
+.console .msum-row {
+  padding: var(--spacingHorizontalS) 0;
+  border-bottom: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+}
+
+.console .msum-k {
+  font-size: var(--fontSizeBase200);
+  color: var(--colorNeutralForeground3);
+  letter-spacing: 0.04em;
+}
+
+.console .msum-name {
+  font-size: var(--fontSizeBase300);
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorNeutralForeground1);
+}
+
+.console .msum-vs em {
+  font-size: var(--fontSizeBase200);
+  color: var(--colorNeutralForeground4);
+}
+
+.console .vt {
+  padding: 0 var(--spacingHorizontalSNudge);
+  border-radius: var(--borderRadiusSmall);
+  font-size: var(--fontSizeBase200);
+  font-weight: var(--fontWeightMedium);
+}
+
+.console .vt.a {
+  background: color-mix(in srgb, var(--colorPaletteTealBackground1) 60%, transparent);
+  color: var(--colorPaletteTealForeground1);
+}
+
+.console .vt.b {
+  background: color-mix(in srgb, var(--colorPaletteMarigoldBackground1) 60%, transparent);
+  color: var(--colorPaletteMarigoldForeground1);
+}
+
+/* ---- 叠加层预览 ---------------------------------------------------------- */
+.console .preview-box {
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  border-radius: var(--borderRadiusMedium);
+  background: var(--colorNeutralBackground5);
+  overflow: hidden;
+}
+
+.console .ov-url {
+  padding: var(--spacingHorizontalS) var(--spacingHorizontalM);
+  background: var(--colorNeutralBackground2);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  border-radius: var(--borderRadiusMedium);
+}
+
+.console .ov-url code {
+  font-family: var(--fontFamilyMonospace);
+  font-size: var(--fontSizeBase200);
+  color: var(--colorNeutralForeground2);
+}
+
+.console .ov-url .ov-k {
+  font-size: var(--fontSizeBase200);
+  color: var(--colorNeutralForeground3);
+}
+
+/* ---- OBS 卡片 ------------------------------------------------------------ */
+.console .obs-status {
+  height: 22px;
+  padding: 0 var(--spacingHorizontalS);
+  border-radius: var(--borderRadiusSmall);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  background: var(--colorNeutralBackground2);
+  font-size: var(--fontSizeBase100);
+  letter-spacing: 0.06em;
+  color: var(--colorNeutralForeground3);
+}
+
+.console .obs-status.ok {
+  color: var(--colorPaletteGreenForeground1);
+}
+
+.console .obs-status.live {
+  color: var(--colorPaletteRedForeground1);
+  border-color: var(--colorPaletteRedBackground3);
+}
+
+.console .obs-error {
+  color: var(--colorPaletteRedForeground1);
+}
+
+.console .scene {
+  height: 28px;
+  padding: 0 var(--spacingHorizontalM);
+  border-radius: var(--borderRadiusMedium);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  background: var(--colorNeutralBackground2);
+  color: var(--colorNeutralForeground2);
+  font-size: var(--fontSizeBase200);
+  cursor: pointer;
+  transition: background var(--motionFluid), border-color var(--motionFluid),
+    color var(--motionFluid);
+}
+
+.console .scene:hover {
+  background: var(--colorNeutralBackground2Hover);
+  color: var(--colorNeutralForeground1);
+}
+
+.console .scene.on {
+  background: var(--colorNeutralBackground1Selected);
+  border-color: var(--colorBrandStroke1);
+  color: var(--colorNeutralForeground1);
+}
+
+.console .obs-guide b,
+.console .hint b {
+  color: var(--colorNeutralForeground2);
+}
+
+.console .hint {
+  font-size: var(--fontSizeBase200);
+  line-height: var(--lineHeightBase200);
+  color: var(--colorNeutralForeground4);
+}
+
+.console .hint.warn {
+  color: var(--colorPaletteMarigoldForeground1);
+}
+
+/* ---- 弹窗：Fluent Dialog ------------------------------------------------- */
+.console .modal-mask {
+  background: var(--colorBackgroundOverlay);
+  animation: fluentFadeIn var(--durationFast) var(--curveDecelerateMid) both;
+}
+
+.console .modal {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 48px);
+  background: var(--colorNeutralBackground1);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  border-radius: var(--borderRadiusXLarge);
+  box-shadow: var(--shadow28);
+  animation: fluentDialogIn var(--motionEnter) both;
+}
+
+.console .modal-head {
+  flex: none;
+  padding: var(--spacingHorizontalL) var(--spacingHorizontalXXL);
+  border-bottom: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+}
+
+.console .modal-head b {
+  font-family: var(--fontFamilyDisplay);
+  font-size: var(--fontSizeBase500);
+  line-height: var(--lineHeightBase500);
+  font-weight: var(--fontWeightSemibold);
+  color: var(--colorNeutralForeground1);
+}
+
+.console .modal-head span {
+  font-size: var(--fontSizeBase200);
+  color: var(--colorNeutralForeground3);
+}
+
+/* 页签：Fluent TabList（下划线指示器随选中项滑动） */
+.console .mtabs {
+  flex: none;
+  gap: var(--spacingHorizontalXS);
+  border-bottom: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  padding: 0 var(--spacingHorizontalXXL);
+}
+
+.console .mtabs button {
+  position: relative;
+  height: 40px;
+  padding: 0 var(--spacingHorizontalM);
+  border: 0;
+  background: transparent;
+  color: var(--colorNeutralForeground3);
+  font-size: var(--fontSizeBase300);
+  font-weight: var(--fontWeightRegular);
+  border-radius: var(--borderRadiusMedium) var(--borderRadiusMedium) 0 0;
+  cursor: pointer;
+  transition: color var(--motionFluid), background var(--motionFluid);
+}
+
+.console .mtabs button::after {
+  content: '';
+  position: absolute;
+  left: var(--spacingHorizontalM);
+  right: var(--spacingHorizontalM);
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: transparent;
+  transition: background var(--durationNormal) var(--curveDecelerateMid);
+}
+
+.console .mtabs button:hover {
+  background: var(--colorNeutralBackground1Hover);
+  color: var(--colorNeutralForeground1);
+}
+
+.console .mtabs button.on {
+  color: var(--colorNeutralForeground1);
+  font-weight: var(--fontWeightSemibold);
+}
+
+.console .mtabs button.on::after {
+  background: var(--colorBrandStroke1);
+}
+
+.console .mbody {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--spacingHorizontalXXL);
+}
+
+/* ---- 向导 ---------------------------------------------------------------- */
+.console .wizard {
+  background: var(--colorNeutralBackground1);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  border-radius: var(--borderRadiusXLarge);
+  box-shadow: var(--shadow64);
+  animation: fluentDialogIn var(--motionEnter) both;
+}
+
+.console .wz-steps span {
+  height: 24px;
+  padding: 0 var(--spacingHorizontalM);
+  border-radius: var(--borderRadiusMedium);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  background: var(--colorNeutralBackground2);
+  font-size: var(--fontSizeBase200);
+  color: var(--colorNeutralForeground3);
+  transition: background var(--motionFluid), color var(--motionFluid);
+}
+
+.console .wz-steps span.on {
+  background: var(--colorBrandBackground);
+  border-color: var(--colorBrandBackground);
+  color: var(--colorNeutralForegroundOnBrand);
+}
+
+.console .wz-steps span.done {
+  color: var(--colorPaletteGreenForeground1);
+}
+
+/* ---- 提示条 -------------------------------------------------------------- */
+.console .toast {
+  background: var(--colorNeutralBackground1);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke1);
+  border-radius: var(--borderRadiusMedium);
+  box-shadow: var(--shadow16);
+  font-size: var(--fontSizeBase200);
+  animation: fluentSlideUp var(--motionEnter) both;
+}
+
+/* ---- 背景预览 ------------------------------------------------------------ */
+.console .bg-preview {
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  border-radius: var(--borderRadiusMedium);
+  overflow: hidden;
+}
+
+.console .bg-empty {
+  background: var(--colorNeutralBackground2);
+  color: var(--colorNeutralForeground4);
+  border: var(--strokeWidthThin) dashed var(--colorNeutralStroke2);
+  border-radius: var(--borderRadiusMedium);
+  font-size: var(--fontSizeBase200);
+}
+
+/* ---- 滚动条：Fluent 细滚动条 -------------------------------------------- */
+.console ::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.console ::-webkit-scrollbar-thumb {
+  background: var(--colorNeutralStroke2);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 8px;
+}
+
+.console ::-webkit-scrollbar-thumb:hover {
+  background: var(--colorNeutralStroke1Hover);
+  background-clip: padding-box;
+}
+
+.console ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---------------------------------------------------------------------------
+   B. 直播叠加层
+   --------------------------------------------------------------------------- */
+
+.stage {
+  font-family: var(--fontFamilyBase);
+  color: var(--colorNeutralForeground1);
+}
+
+/* 顶带 */
+.stage .top {
+  background: color-mix(in srgb, var(--colorNeutralBackground2) 94%, transparent);
+  border-bottom: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+}
+
+.stage .top .name {
+  font-family: var(--fontFamilyDisplay);
+  font-size: var(--fontSizeHero700);
+  line-height: var(--lineHeightHero700);
+  font-weight: var(--fontWeightSemibold);
+  letter-spacing: 0.01em;
+}
+
+.stage .top .meta {
+  font-size: var(--fontSizeBase200);
+  line-height: var(--lineHeightBase200);
+  letter-spacing: 0.12em;
+  color: var(--colorNeutralForeground3);
+}
+
+.stage .live-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacingHorizontalS);
+  height: 24px;
+  padding: 0 var(--spacingHorizontalM);
+  border-radius: var(--borderRadiusSmall);
+  background: var(--colorPaletteRedBackground3);
+  color: var(--colorNeutralForegroundInverted, #ffffff);
+  font-size: var(--fontSizeBase100);
+  font-weight: var(--fontWeightSemibold);
+  letter-spacing: 0.08em;
+}
+
+.stage .live-chip i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+  animation: fluentPulse 2s var(--curveEasyEase) infinite;
+}
+
+/* 游戏区 */
+.stage .game.black {
+  background: var(--colorNeutralBackground5);
+  border-bottom: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+}
+
+.stage .game.transparent {
+  background: transparent;
+  border-bottom: 0;
+}
+
+/* 模拟画面：仅 demo 预览可见，明确标注非真实信号 */
+.stage .feed {
+  background: var(--colorNeutralBackground4);
+}
+
+.stage .feed-tag {
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+  border-radius: var(--borderRadiusSmall);
+  color: var(--colorNeutralForeground3);
+  font-size: var(--fontSizeBase100);
+  letter-spacing: 0.08em;
+}
+
+/* 右栏 */
+.stage .side {
+  background: color-mix(in srgb, var(--colorNeutralBackground2) 96%, transparent);
+  border-left: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+}
+
+.stage .side-hd {
+  border-bottom: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+}
+
+.stage .side-hd .tname {
+  font-family: var(--fontFamilyDisplay);
+  font-size: var(--fontSizeHero700);
+  line-height: var(--lineHeightHero700);
+  font-weight: var(--fontWeightSemibold);
+}
+
+.stage .side-hd .tsub {
+  font-size: var(--fontSizeBase100);
+  letter-spacing: 0.16em;
+  color: var(--colorNeutralForeground3);
+}
+
+.stage .badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--borderRadiusSmall);
+  font-family: var(--fontFamilyNumeric);
+  font-size: var(--fontSizeBase200);
+  font-weight: var(--fontWeightSemibold);
+}
+
+.stage .side .badge {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--accent-bright);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+/* 选手槽位 */
+.stage .slot {
+  background: var(--colorNeutralBackground1);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  border-left: 3px solid transparent;
+  border-radius: var(--borderRadiusLarge);
+  transition: background var(--durationNormal) var(--curveDecelerateMid),
+    border-color var(--durationNormal) var(--curveDecelerateMid),
+    box-shadow var(--durationNormal) var(--curveDecelerateMid);
+}
+
+.stage .slot {
+  height: 168px;
+}
+
+.stage .slot .sav {
+  width: 84px;
+  height: 84px;
+}
+
+.stage .slot .idx {
+  bottom: 8px;
+  right: 12px;
+}
+
+.stage .slot .id {
+  font-family: var(--fontFamilyNumeric);
+  font-size: var(--fontSizeBase300);
+  color: var(--colorNeutralForeground4);
+}
+
+.stage .slot .sav {
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+  border-radius: var(--borderRadiusMedium);
+  background: var(--colorNeutralBackground6);
+  overflow: hidden;
+}
+
+.stage .slot .sname {
+  font-size: var(--fontSizeBase500);
+  line-height: var(--lineHeightBase500);
+  font-weight: var(--fontWeightSemibold);
+  color: var(--colorNeutralForeground1);
+}
+
+.stage .slot.off {
+  opacity: 1;
+  background: var(--colorNeutralBackground2);
+  border-color: var(--colorNeutralStroke3);
+}
+
+.stage .slot.off .sname {
+  color: var(--colorNeutralForegroundDisabled);
+}
+
+.stage .slot.on {
+  background: color-mix(in srgb, var(--accent) 12%, var(--colorNeutralBackground1));
+}
+
+.stage .side .slot.on {
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--colorNeutralStroke2));
+  border-left-color: var(--accent);
+  box-shadow: var(--shadow4);
+}
+
+.stage .side .slot.on .sname {
+  color: var(--accent-bright);
+}
+
+/* 状态标签 */
+.stage .chip {
+  height: 18px;
+  padding: 0 var(--spacingHorizontalSNudge);
+  border-radius: var(--borderRadiusSmall);
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+  background: var(--colorNeutralBackground2);
+  font-size: var(--fontSizeBase100);
+  letter-spacing: 0.04em;
+  color: var(--colorNeutralForeground3);
+}
+
+.stage .chip.alive {
+  color: var(--colorPaletteGreenForeground1);
+  border-color: var(--colorPaletteGreenBackground1);
+  background: color-mix(in srgb, var(--colorPaletteGreenBackground1) 70%, transparent);
+}
+
+.stage .chip.dead {
+  color: var(--colorNeutralForeground4);
+}
+
+.stage .chip.online {
+  color: var(--colorNeutralForeground2);
+}
+
+.stage .chip.offline {
+  color: var(--colorPaletteRedForeground1);
+  border-color: var(--colorPaletteRedBackground1);
+  background: color-mix(in srgb, var(--colorPaletteRedBackground1) 70%, transparent);
+}
+
+.stage .slot .now {
+  height: 18px;
+  padding: 0 var(--spacingHorizontalSNudge);
+  border-radius: var(--borderRadiusSmall);
+  font-size: var(--fontSizeBase100);
+  font-weight: var(--fontWeightSemibold);
+  letter-spacing: 0.08em;
+}
+
+.stage .side .slot .now {
+  background: var(--accent);
+  color: var(--colorNeutralForegroundOnBrand);
+}
+
+/* 跨队提示条 */
+.stage .side-note {
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke1);
+  border-radius: var(--borderRadiusMedium);
+  background: var(--colorNeutralBackground1);
+  font-size: var(--fontSizeBase200);
+  line-height: var(--lineHeightBase200);
+  color: var(--colorNeutralForeground2);
+  box-shadow: var(--shadow4);
+}
+
+/* 解说栏 */
+.stage .band {
+  background: color-mix(in srgb, var(--colorNeutralBackground2) 94%, transparent);
+  border-top: var(--strokeWidthThin) solid var(--colorNeutralStroke3);
+}
+
+.stage .caster .cav.empty,
+.stage .feed-empty {
+  background: var(--colorNeutralBackground3);
+  border-style: solid;
+  border-color: var(--colorNeutralStroke3);
+  color: var(--colorNeutralForeground4);
+  font-size: var(--fontSizeBase100);
+  letter-spacing: 0.08em;
+}
+
+.stage .caster .cav {
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke2);
+  border-radius: var(--borderRadiusMedium);
+  background: var(--colorNeutralBackground6);
+  overflow: hidden;
+}
+
+.stage .caster .cname {
+  font-size: var(--fontSizeBase400);
+  line-height: var(--lineHeightBase400);
+  font-weight: var(--fontWeightSemibold);
+}
+
+.stage .caster .crole {
+  font-size: var(--fontSizeBase100);
+  letter-spacing: 0.14em;
+  color: var(--colorNeutralForeground3);
+}
+
+.stage .band-divider {
+  background: var(--colorNeutralStroke3);
+}
+
+/* 计时 */
+.stage .timer .tlabel {
+  font-size: var(--fontSizeBase100);
+  letter-spacing: 0.16em;
+  color: var(--colorNeutralForeground3);
+}
+
+.stage .timer .tdigits {
+  font-family: var(--fontFamilyNumeric);
+  font-size: 60px;
+  line-height: 68px;
+  font-weight: var(--fontWeightSemibold);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  color: var(--colorNeutralForeground1);
+  transition: color var(--durationNormal) var(--curveDecelerateMid);
+}
+
+.stage .timer.paused .tdigits {
+  color: var(--colorPaletteMarigoldForeground1);
+}
+
+.stage .timer.idle .tdigits {
+  color: var(--colorNeutralForeground3);
+}
+
+.stage .timer .tbar {
+  height: 3px;
+  background: var(--colorNeutralStroke3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.stage .timer .tbar i {
+  background: color-mix(in srgb, var(--colorBrandStroke1) 70%, transparent);
+  border-radius: 2px;
+  transition: width var(--durationNormal) var(--curveDecelerateMid),
+    background var(--durationNormal) var(--curveDecelerateMid);
+}
+
+.stage .timer.paused .tbar i {
+  background: var(--colorPaletteMarigoldBorder1);
+}
+
+.stage .timer .tmeta {
+  font-size: var(--fontSizeBase100);
+  letter-spacing: 0.12em;
+  color: var(--colorNeutralForeground4);
+}
+
+/* ---------------------------------------------------------------------------
+   C. Fluent 动效关键帧
+   Fluent 的进入用减速曲线、少数强调动作用缓入缓出，位移不超过 8px。
+   --------------------------------------------------------------------------- */
+
+@keyframes fluentFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fluentDialogIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fluentSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fluentPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+/* 队伍 B：选中行的强调色换成琥珀，避免出现"B 队却用青色"的错配 */
+.console .frows.t-B .frow.on {
+  background: color-mix(in srgb, var(--b) 11%, var(--colorNeutralBackground1));
+  border-color: color-mix(in srgb, var(--b) 45%, var(--colorNeutralStroke2));
+  border-left-color: var(--b);
+}
+
+.console .frows.t-B .frow.on .fshot {
+  border-color: color-mix(in srgb, var(--b) 65%, var(--colorNeutralStroke2));
+}
+
+.console .frows.t-B .fnow {
+  background: var(--b);
+  color: #1a1206;
+  border-color: var(--b);
+}
+
+.console .frows.t-A .fnow {
+  background: var(--a);
+  color: #06222a;
+}

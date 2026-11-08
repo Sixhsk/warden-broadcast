@@ -1,0 +1,22 @@
+const fs=require('fs'),path=require('path'),WS=require('ws');
+const PNG='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+const JPG='/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q==';
+const WEBP='UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEAAUAmJQBOgCHwAP7+4AAAAA==';
+(async()=>{
+const {startServer}=require('D:/AI Working/app/dist-server/server.cjs');
+await startServer({port:7419,staticDir:'D:/AI Working/app/dist',dataDir:'D:/AI Working/app/.tmpdata2'});
+const ws=new WS('ws://127.0.0.1:7419/ws');let id=0;const w={};
+const send=(t,p)=>new Promise(r=>{const i='c'+(++id);w[i]=r;ws.send(JSON.stringify({t,payload:p,id:i}))});
+ws.on('message',m=>{const j=JSON.parse(m);if(j.t==='ack'&&w[j.id]){w[j.id](j.data);delete w[j.id]}});
+await new Promise(r=>ws.on('open',r));
+const up=async(kind,b64,mime)=>await send('asset.upload',{kind,dataUrl:`data:${mime};base64,`+b64,thumbDataUrl:`data:${mime};base64,`+b64,w:1,h:1,source:'e2e'});
+const a=await up('avatar',JPG,'image/jpeg');
+const b=await up('avatar',WEBP,'image/webp');
+const c=await up('background',PNG,'image/png');
+console.log('upload jpeg:',!!a.asset,'webp:',!!b.asset,'bg:',!!c.asset);
+if(a.asset)await send('player.avatar',{playerId:'A1',assetId:a.asset.id});
+if(b.asset)await send('caster.update',{id:'c1',avatar:b.asset.id});
+if(c.asset)await send('bg.set',{assetId:c.asset.id});
+console.log('READY');
+setInterval(()=>{},1000);
+})().catch(e=>{console.log('ERR',e.message);process.exit(1)});
