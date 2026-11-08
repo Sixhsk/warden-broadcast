@@ -43,6 +43,10 @@ export interface AssetMeta {
   createdAt: number;
   url: string;
   thumbUrl: string;
+  /** 素材库：原始文件名（用于搜索与识别） */
+  name?: string | null;
+  /** 素材库：归一化后字节的 sha256，用于去重 */
+  sha256?: string | null;
 }
 
 export type TimerPhase = 'idle' | 'running' | 'paused';
@@ -70,6 +74,8 @@ export interface MatchState {
   theme: { seed: string; mode: 'dark' | 'light' };
   background: string | null;
   assets: Record<string, AssetMeta>;
+  /** 素材库目录（绝对路径）；null = 跟随数据目录下的 assets/ */
+  libDir?: string | null;
   obs: { url: string; srcScene?: string };
 }
 
@@ -158,7 +164,12 @@ function connect() {
       const w = ackWaiters.get(msg.id);
       if (w) {
         ackWaiters.delete(msg.id);
-        w.resolve(msg.data);
+        const d = msg.data;
+        if (d && typeof d === 'object' && typeof (d as any).error === 'string') {
+          w.reject(new Error((d as any).error));
+        } else {
+          w.resolve(d);
+        }
       }
     } else if (msg.t === 'error') {
       if (msg.id) {

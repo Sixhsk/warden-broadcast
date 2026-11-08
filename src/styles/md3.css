@@ -814,7 +814,7 @@ md-primary-tab {
 .console .wizard-mask {
   position: fixed;
   inset: 0;
-  z-index: 80;
+  z-index: 90;
   display: grid;
   place-items: center;
   background: color-mix(in srgb, var(--md-sys-color-scrim) 60%, transparent);
@@ -871,7 +871,7 @@ md-primary-tab {
   color: var(--md-sys-color-inverse-on-surface);
   font-size: var(--type-body-medium);
   animation: mdToastIn var(--dur-medium) var(--ease-decelerate) both;
-  z-index: 90;
+  z-index: 95;
 }
 
 /* 素材预览 */
@@ -1789,3 +1789,35 @@ md-primary-tab {
 .console .wizard-mask{ overflow-y:auto; align-items:flex-start; padding:28px 0 48px; }
 .console .wizard{ max-height:none; height:auto; }
 .console .wizard .mbody{ overflow:visible; max-height:none; }
+
+/* ---------- 素材库 ---------- */
+.console .libbar{display:flex;align-items:flex-end;gap:10px;margin:6px 0 10px;flex-wrap:wrap}
+.console .libbar .libdir{flex:1 1 360px}
+.console .libcount{font-size:12px;line-height:16px;color:var(--md-sys-color-on-surface-variant)}
+.console .libprog{display:flex;flex-direction:column;gap:6px;margin:4px 0 10px;font-size:12px;color:var(--md-sys-color-on-surface-variant)}
+.console .libnotes{margin:0 0 10px;padding-left:18px;font-size:12px;color:var(--md-sys-color-error)}
+.console .libgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
+.console .libcell{position:relative;display:flex;flex-direction:column;gap:4px;border-radius:12px;overflow:hidden;background:var(--md-sys-color-surface-container-low);padding:6px 6px 4px}
+.console .libcell .libpick{border:0;padding:0;background:none;cursor:pointer;display:block;width:100%;aspect-ratio:1/1;border-radius:8px;overflow:hidden}
+.console .libcell .libpick img{width:100%;height:100%;object-fit:cover;display:block}
+.console .libcell:hover{outline:2px solid var(--md-sys-color-primary);outline-offset:-2px}
+.console .libcell.ph{align-items:center;justify-content:center;cursor:pointer;border:1px dashed var(--md-sys-color-outline);background:transparent;aspect-ratio:1/1}
+.console .libcell.ph .phmark{font:700 22px/1 'Consolas',monospace;color:var(--md-sys-color-outline)}
+.console .libcell.ph em{font-size:11px;color:var(--md-sys-color-on-surface-variant);font-style:normal}
+.console .libname{font-size:11px;line-height:14px;color:var(--md-sys-color-on-surface-variant);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.console .libmini{position:absolute;top:4px;right:4px;width:20px;height:20px;border:0;border-radius:10px;cursor:pointer;font-size:11px;line-height:1;background:rgba(0,0,0,.55);color:#fff;opacity:0;transition:opacity .15s}
+.console .libmini.del{right:26px}
+.console .libcell:hover .libmini{opacity:1}
+.console .libempty{grid-column:1/-1;font-size:12px;color:var(--md-sys-color-on-surface-variant)}
+.console .pavpick{border:0;background:var(--md-sys-color-surface-container-highest);color:var(--md-sys-color-on-surface);font-size:11px;line-height:1;padding:4px 8px;border-radius:8px;cursor:pointer}
+.console .pavpick:hover{background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container)}
+
+/* 头像选择面板 */
+/* 层级契约：内容 0 < 设置弹窗 70 < 素材选择器 85 < 向导 90 < Toast 95 */
+.console .pickmask{position:fixed;inset:0;z-index:85;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:24px}
+.console .picksheet{width:min(920px,100%);max-height:calc(100vh - 64px);display:flex;flex-direction:column;gap:10px;padding:18px 20px;border-radius:24px;background:var(--md-sys-color-surface-container-high);box-shadow:0 12px 32px rgba(0,0,0,.5);animation:mdDialogIn .18s var(--ease-emphasized)}
+.console .pickhead{display:flex;align-items:center;gap:12px}
+.console .pickhead h3{margin:0;font-size:16px;font-weight:600;flex:none}
+.console .pickhead md-outlined-text-field{flex:1}
+.console .pickbody{overflow:auto;min-height:150px;padding:4px}
+.console .pickfoot{display:flex;align-items:center;justify-content:space-between;gap:12px}

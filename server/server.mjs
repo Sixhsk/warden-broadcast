@@ -2,6 +2,7 @@
 // 职责：单一 matchState + WebSocket 广播 + 素材存储 + OBS WebSocket 桥接 + 静态资源
 import http from 'node:http';
 import fs from 'node:fs';
+import { execFile } from 'node:child_process';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
@@ -60,6 +61,7 @@ function defaultState() {
     theme: { seed: '#4F6BED', mode: 'dark' },
     background: null,
     assets: {},
+    libDir: null,
     obs: { url: 'ws://127.0.0.1:4455', srcScene: '比赛画面' },
   };
 }
@@ -232,6 +234,8 @@ function storeAsset(kind, dataUrl, thumbDataUrl, meta = {}) {
     bytes: buf.length,
     createdAt: Date.now(),
     source: meta.source || '本地导入',
+    name: String(meta.name || '').slice(0, 80) || null,
+    sha256: String(meta.sha256 || '').slice(0, 64).toLowerCase() || null,
   };
   state.assets[id] = asset;
   return asset;
@@ -852,9 +856,72 @@ function applyCommand(type, payload = {}) {
       obsDisconnect();
       return null;
     case 'asset.upload': {
-      const kind = payload.kind === 'background' ? 'background' : payload.kind === 'caster' ? 'caster' : 'avatar';
-      const asset = storeAsset(kind, payload.dataUrl, payload.thumbDataUrl, { w: payload.w, h: payload.h, source: payload.source });
-      return { asset: { ...asset, url: assetUrl(asset.id), thumbUrl: thumbUrl(asset.id) } };
+      const kind = payload.kind === 'background' ? 'background' : 'avatar';
+      const sha = String(payload.sha256 || '').toLowerCase().slice(0, 64);
+      if (sha) {
+        const hit = Object.values(state.assets).find((a) => a.sha256 === sha && a.kind === kind);
+        if (hit) return { asset: { ...hit, url: assetUrl(hit.id), thumbUrl: thumbUrl(hit.id) }, deduped: true };
+      }
+      const asset = storeAsset(kind, payload.dataUrl, payload.thumbDataUrl, { w: payload.w, h: payload.h, source: payload.source, name: payload.name, sha256: sha });
+      return { asset: { ...asset, url: assetUrl(asset.id), thumbUrl: thumbUrl(asset.id) }, deduped: false };
+    }
+    case 'lib.dir': {
+      const raw = String(payload.path || '').trim();
+      if (!raw) {
+        state.libDir = null;
+        assetsDir = state.libDir ? path.resolve(state.libDir) : path.join(dataDir, 'assets');
+  fs.mkdirSync(assetsDir, { recursive: true });
+        fs.mkdirSync(assetsDir, { recursive: true });
+        return { dir: assetsDir };
+      }
+      const norm = raw;
+      if (!path.win32.isAbsolute(norm)) return '素材目录需为绝对路径，例如 D:/卫戍协议素材';
+      const dir = path.normalize(norm);
+      fs.mkdirSync(dir, { recursive: true });
+      const old = path.join(dataDir, 'assets');
+      for (const a of Object.values(state.assets)) {
+        for (const file of [a.file, a.thumb]) {
+          if (!file) continue;
+          const src = path.join(old, file);
+          const dst = path.join(dir, file);
+          if (!fs.existsSync(dst) && fs.existsSync(src)) {
+            try { fs.copyFileSync(src, dst); } catch {}
+          }
+        }
+      }
+      state.libDir = dir;
+      assetsDir = dir;
+      log('素材目录 → ' + dir);
+      return { dir };
+    }
+    case 'lib.reveal': {
+      try { execFile('explorer.exe', [assetsDir]); } catch {}
+      return { dir: assetsDir };
+    }
+    case 'lib.rename': {
+      const a = state.assets[payload.id];
+      if (!a) return '素材不存在';
+      const nm = String(payload.name || '').trim().slice(0, 80);
+      if (!nm) return '名称不能为空';
+      a.name = nm;
+      return null;
+    }
+    case 'lib.remove': {
+      const id = String(payload.id || '');
+      const a = state.assets[id];
+      if (!a) return '素材不存在';
+      const users = [];
+      for (const p of allPlayers()) if (p.avatar === id) users.push(p.nickname);
+      for (const c of state.casters) if (c.avatar === id) users.push('解说 · ' + c.name);
+      if (state.background === id) users.push('当前背景');
+      if (users.length) return '该素材正被使用：' + users.slice(0, 3).join('、') + (users.length > 3 ? ' 等 ' + users.length + ' 处' : '');
+      for (const file of [a.file, a.thumb]) {
+        if (!file) continue;
+        try { fs.unlinkSync(path.join(assetsDir, file)); } catch {}
+        try { fs.unlinkSync(path.join(dataDir, 'assets', file)); } catch {}
+      }
+      delete state.assets[id];
+      return null;
     }
     default:
       return '未知命令：' + type;
@@ -910,11 +977,11 @@ async function handleCommand(ws, type, payload, id) {
 
     const result = applyCommand(type, payload);
     if (typeof result === 'string') {
-      return sendTo(ws, { t: 'error', message: result });
+      sendTo(ws, { t: 'error', message: result });
+      sendTo(ws, { t: 'ack', id, data: { error: result } });
+      return;
     }
-    if (result && typeof result === 'object') {
-      sendTo(ws, { t: 'ack', id, data: result });
-    }
+    sendTo(ws, { t: 'ack', id, data: result === undefined ? null : result });
     bump();
     broadcast();
     if (type === 'obs.config' || type === 'asset.upload') pushObs();
@@ -1126,7 +1193,9 @@ function createHttp(staticDir) {
       if (!/^[a-z0-9_]+\.(png|jpg|jpeg|webp|gif)$/i.test(name)) {
         res.writeHead(400); res.end('bad asset'); return;
       }
-      return serveFile(res, path.join(assetsDir, name));
+      const primary = path.join(assetsDir, name);
+      if (fs.existsSync(primary)) return serveFile(res, primary);
+      return serveFile(res, path.join(dataDir, 'assets', name));
     }
 
     if (p === '/' || p === '/index.html') return serveFile(res, path.join(staticDir, 'index.html'));

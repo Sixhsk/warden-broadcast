@@ -56,3 +56,25 @@ tools/obs-apply.cjs
 tools/obs-apply2.cjs
 tools/bili-frame.cjs
 tools/.sim-*.log
+
+# 本地调试与构建中间产物
+.pkgud/
+.pkgud*/
+.libtest/
+.libdata/
+.libA/
+.libB/
+.libP/
+.temp/
+.cdp/
+.patch*.cjs
+.rel*
+.upurl
+.assets.json
+.libsrv*.log
+.pkg*.log
+.z.log
+.libtest*/
+.libdata*/
+.up.*.json
+.upurl

@@ -18,6 +18,8 @@ import {
   useTick,
 } from '../lib/store';
 import { MdButton, MdDialog, MdField, MdSeg, MdTabs } from './md';
+import type { AssetKind, ImportProgress } from '../lib/importer';
+import { emptyProgress, importBatch, filesFromZipFile } from '../lib/importer';
 import { DEFAULT_SEED, THEME_PRESETS, applyTheme, isHexColor } from '../lib/md3';
 
 /* ------------------------------------------------------------ 基础控件 */
@@ -120,6 +122,243 @@ function EventCard({ st }: { st: MatchState }) {
 
 /* ---------------------------------------------------------------- 选手行 */
 
+type PickerRequest = { kind: 'avatar' | 'background'; title: string; onPick: (id: string | null) => void };
+
+function openPicker(req: PickerRequest) {
+  window.dispatchEvent(new CustomEvent('wb-picker', { detail: req }));
+}
+
+function libItems(st: MatchState, kind: 'avatar' | 'background'): AssetMeta[] {
+  return Object.values(st.assets)
+    .filter((a) => (kind === 'avatar' ? a.kind !== 'background' : a.kind === 'background'))
+    .sort((x, y) => (y.createdAt || 0) - (x.createdAt || 0));
+}
+
+function LibGrid({
+  items,
+  onPick,
+  onDelete,
+  onRename,
+  showNull
+}: {
+  items: AssetMeta[];
+  onPick?: (id: string | null) => void;
+  onDelete?: (a: AssetMeta) => void;
+  onRename?: (a: AssetMeta) => void;
+  showNull?: boolean;
+}) {
+  return (
+    <div className="libgrid">
+      {showNull && (
+        <button type="button" className="libcell ph" onClick={() => onPick?.(null)} title="使用占位图">
+          <span className="phmark">PH</span>
+          <em>占位</em>
+        </button>
+      )}
+      {items.map((a) => (
+        <div className="libcell" key={a.id} title={a.name || a.id}>
+          <button type="button" className="libpick" onClick={() => onPick?.(a.id)}>
+            <img src={a.thumbUrl || a.url} alt="" />
+          </button>
+          {onRename && (
+            <button type="button" className="libmini" onClick={() => onRename(a)} title="重命名">
+              ✎
+            </button>
+          )}
+          {onDelete && (
+            <button type="button" className="libmini del" onClick={() => onDelete(a)} title="删除">
+              ✕
+            </button>
+          )}
+          <span className="libname">{a.name || a.id}</span>
+        </div>
+      ))}
+      {!items.length && <p className="libempty">还没有素材，先导入图片或压缩包。</p>}
+    </div>
+  );
+}
+
+function ImportBar({
+  kind,
+  prog,
+  onStart
+}: {
+  kind: AssetKind;
+  prog: ImportProgress;
+  onStart: (files: File[], kind: AssetKind) => void;
+}) {
+  const imgRef = useRef<HTMLInputElement>(null);
+  const zipRef = useRef<HTMLInputElement>(null);
+  return (
+    <>
+      <div className="libbar">
+        <MdButton variant="filled" onClick={() => imgRef.current?.click()}>
+          导入图片
+        </MdButton>
+        <MdButton variant="outlined" onClick={() => zipRef.current?.click()}>
+          导入压缩包
+        </MdButton>
+        <span className="libcount">支持 PNG / JPG / WebP，单张 ≤25 MB，一次 ≤200 张</span>
+        <input
+          ref={imgRef}
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/gif"
+          multiple
+          hidden
+          onChange={(e) => {
+            const fs = Array.from(e.target.files || []);
+            e.target.value = '';
+            if (fs.length) onStart(fs, kind);
+          }}
+        />
+        <input
+          ref={zipRef}
+          type="file"
+          accept=".zip"
+          hidden
+          onChange={async (e) => {
+            const f = e.target.files?.[0] as File | undefined;
+            e.target.value = '';
+            if (!f) return;
+            try {
+              const files = await filesFromZipFile(f);
+              if (!files.length) {
+                alert('压缩包里没有找到可用的图片');
+                return;
+              }
+              onStart(files, kind);
+            } catch (err) {
+              alert((err as Error).message);
+            }
+          }}
+        />
+      </div>
+      {(prog.running || prog.total > 0) && (
+        <div className="libprog">
+          <md-linear-progress
+            value={prog.total ? prog.done / prog.total : 0}
+            style={{ width: '100%' }}
+          />
+          <span>
+            {prog.running ? '导入中' : '已完成'} {prog.done}/{prog.total} · 成功 {prog.ok} · 去重 {prog.dedup} · 跳过{' '}
+            {prog.skip}
+            {prog.current ? ` · ${prog.current}` : ''}
+          </span>
+        </div>
+      )}
+      {!!prog.notes.length && (
+        <ul className="libnotes">
+          {prog.notes.slice(-5).map((n, i) => (
+            <li key={i}>{n}</li>
+          ))}
+        </ul>
+      )}
+    </>
+  );
+}
+
+function AssetPicker({ st, req, onClose }: { st: MatchState; req: PickerRequest; onClose: () => void }) {
+  const [q, setQ] = useState('');
+  const [prog, setProg] = useState<ImportProgress>(emptyProgress());
+  const items = libItems(st, req.kind).filter((a) =>
+    q ? (a.name || '').toLowerCase().includes(q.toLowerCase()) : true
+  );
+  const start = (files: File[], kind: AssetKind) => {
+    importBatch(files, kind, setProg).catch(() => {});
+  };
+  return (
+    <div className="pickmask" onClick={onClose}>
+      <div className="picksheet" onClick={(e) => e.stopPropagation()}>
+        <header className="pickhead">
+          <h3>{req.title}</h3>
+          <MdField label="搜索素材" value={q} onValue={setQ} maxLength={40} />
+        </header>
+        <ImportBar kind={req.kind} prog={prog} onStart={start} />
+        <div className="pickbody">
+          <LibGrid
+            items={items}
+            showNull
+            onPick={(id) => {
+              req.onPick(id);
+              onClose();
+            }}
+          />
+        </div>
+        <footer className="pickfoot">
+          <span className="libcount">
+            共 {items.length} 张 · 选「占位」表示不用头像，画面上显示 PH 占位图
+          </span>
+          <MdButton variant="text" onClick={onClose}>
+            取消
+          </MdButton>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+function LibraryCard({ st }: { st: MatchState }) {
+  const [q, setQ] = useState('');
+  const [prog, setProg] = useState<ImportProgress>(emptyProgress());
+  const [dir, setDir] = useState(st.libDir || '');
+  useEffect(() => setDir(st.libDir || ''), [st.libDir]);
+  const items = libItems(st, 'avatar').filter((a) =>
+    q ? (a.name || '').toLowerCase().includes(q.toLowerCase()) : true
+  );
+  const totalMb = (Object.values(st.assets).reduce((n, a) => n + (a.bytes || 0), 0) / 1048576).toFixed(1);
+
+  const start = (files: File[], kind: AssetKind) => {
+    importBatch(files, kind, setProg).catch(() => {});
+  };
+
+  const del = async (a: AssetMeta) => {
+    if (!confirm(`删除「${a.name || a.id}」？被使用的素材不能删除。`)) return;
+    try {
+      await sendAck('lib.remove', { id: a.id });
+    } catch (err) {
+      alert((err as Error).message);
+    }
+  };
+
+  const rename = async (a: AssetMeta) => {
+    const nm = prompt('重命名素材', a.name || '');
+    if (!nm) return;
+    try {
+      await sendAck('lib.rename', { id: a.id, name: nm });
+    } catch (err) {
+      alert((err as Error).message);
+    }
+  };
+
+  return (
+    <Card title="素材库" sub={`头像与背景共用 · 共 ${Object.keys(st.assets).length} 项 · ${totalMb} MB`}>
+      <div className="libbar">
+        <MdField
+          label="素材目录"
+          value={dir}
+          maxLength={200}
+          supportingText="留空 = 跟随数据目录；填写绝对路径可多份安装共用同一批图"
+          className="libdir"
+          onCommit={(v) => {
+            send('lib.dir', { path: v.trim() });
+          }}
+        />
+        <MdButton variant="outlined" onClick={() => send('lib.reveal')}>
+          打开文件夹
+        </MdButton>
+      </div>
+      <ImportBar kind="avatar" prog={prog} onStart={start} />
+      <div className="libbar">
+        <MdField label="搜索" value={q} onValue={setQ} maxLength={40} />
+        <span className="libcount">
+          {Number(totalMb) > 1024 ? '素材库超过 1 GB，建议清理' : Number(totalMb) > 500 ? '素材库超过 500 MB，注意清理' : '容量正常'}
+        </span>
+      </div>
+      <LibGrid items={items} onDelete={del} onRename={rename} />
+    </Card>
+  );
+}
+
 function PlayerRow({ st, p }: { st: MatchState; p: Player }) {
   const av = assetUrl(st, p.avatar);
   const offline = p.signal === 'offline';
@@ -128,17 +367,19 @@ function PlayerRow({ st, p }: { st: MatchState; p: Player }) {
     <div className={`prow ${offline ? 'off' : ''}`}>
       <div className="pav">
         {av ? <img src={av} alt="" /> : <span>无头像</span>}
-        <FileButton
-          label="换图"
-          onFile={async (f) => {
-            try {
-              const a = await uploadImage(f, 'avatar');
-              send('player.avatar', { playerId: p.id, assetId: a.id });
-            } catch (err) {
-              alert((err as Error).message);
-            }
-          }}
-        />
+        <button
+          type="button"
+          className="pavpick"
+          onClick={() =>
+            openPicker({
+              kind: 'avatar',
+              title: `选择头像 · ${p.nickname}`,
+              onPick: (id) => send('player.avatar', { playerId: p.id, assetId: id })
+            })
+          }
+        >
+          换图
+        </button>
       </div>
 
       <div className="pmain">
@@ -231,17 +472,19 @@ function CastersCard({ st }: { st: MatchState }) {
             <div className="crow" key={c.id}>
               <div className="cav">
                 {av ? <img src={av} alt="" /> : <span>无图</span>}
-                <FileButton
-                  label="换图"
-                  onFile={async (f) => {
-                    try {
-                      const a = await uploadImage(f, 'caster');
-                      send('caster.update', { casterId: c.id, patch: { avatar: a.id } });
-                    } catch (err) {
-                      alert((err as Error).message);
-                    }
-                  }}
-                />
+                <button
+                  type="button"
+                  className="pavpick"
+                  onClick={() =>
+                    openPicker({
+                      kind: 'avatar',
+                      title: `选择头像 · ${c.name}`,
+                      onPick: (id) => send('caster.update', { casterId: c.id, patch: { avatar: id } })
+                    })
+                  }
+                >
+                  换图
+                </button>
               </div>
               <div className="cfields">
                 <MdField
@@ -1015,7 +1258,12 @@ function SettingsModal({ st, obs, onClose }: { st: MatchState; obs: any; onClose
           </>
         )}
         {tab === 1 && <StreamCard st={st} />}
-        {tab === 2 && <BackgroundCard st={st} />}
+        {tab === 2 && (
+          <>
+            <BackgroundCard st={st} />
+            <LibraryCard st={st} />
+          </>
+        )}
         {tab === 3 && <ThemeCard st={st} />}
         {tab === 4 && <ObsCard st={st} obs={obs} />}
       </div>
@@ -1034,6 +1282,13 @@ function SettingsModal({ st, obs, onClose }: { st: MatchState; obs: any; onClose
 export default function App() {
   const { snap, connected, errors } = useApp();
   const [settings, setSettings] = useState(() => new URLSearchParams(location.search).has('settings'));
+  const [picker, setPicker] = useState<PickerRequest | null>(null);
+
+  useEffect(() => {
+    const h = (e: Event) => setPicker(((e as CustomEvent).detail as PickerRequest) || null);
+    window.addEventListener('wb-picker', h as EventListener);
+    return () => window.removeEventListener('wb-picker', h as EventListener);
+  }, []);
 
   const seed = snap?.state?.theme?.seed || DEFAULT_SEED;
   const mode = (snap?.state?.theme?.mode || 'dark') as 'dark' | 'light';
@@ -1076,6 +1331,7 @@ export default function App() {
         </div>
       </main>
 
+      {picker && <AssetPicker st={st} req={picker} onClose={() => setPicker(null)} />}
       {settings && <SettingsModal st={st} obs={obs} onClose={() => setSettings(false)} />}
       {!st.setupDone && <Wizard st={st} />}
     </div>
