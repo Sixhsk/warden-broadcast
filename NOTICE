@@ -1,0 +1,42 @@
+WardenBroadcast — 明日方舟：卫戍协议 赛事直播 UI
+Copyright 2026 Sixhsk
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+--------------------------------------------------------------------------
+第三方软件声明 / Third-party notices
+
+运行时依赖（随安装包分发）：
+  - Electron ............ MIT
+  - React / ReactDOM .... MIT
+  - ws .................. MIT
+  - @material/web ....... Apache-2.0
+  - @material/material-color-utilities ... Apache-2.0
+
+构建期依赖（不随安装包分发）：
+  - Vite ................ MIT
+  - esbuild ............. MIT
+  - TypeScript .......... Apache-2.0
+  - electron-builder .... MIT
+  - @fluentui/tokens .... MIT
+
+完整依赖树与版本见 package.json；各依赖的许可证原文见
+node_modules/<package>/LICENSE。
+
+--------------------------------------------------------------------------
+素材声明 / Asset notice
+
+本仓库不包含任何《明日方舟》官方美术资源。界面中的头像、队徽、
+背景图等均为原创占位素材（带 PH 标记）或由使用者自行提供。
+"明日方舟"及相关名称、标识归其权利人所有，本项目与官方无关联。
+使用者若导入第三方素材，需自行取得授权，该部分不在本许可证覆盖范围内。
