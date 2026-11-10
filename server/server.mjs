@@ -642,6 +642,10 @@ async function applyObsFocus() {
   let changed = 0;
   for (const it of found) {
     const want = it.sourceName === target || it.sourceName === targetSim;
+    // 同一时刻只允许当前播出的那一路出声，其余全部静音
+    try {
+      await obsSend('SetInputMute', { inputName: it.sourceName, inputMuted: !want });
+    } catch {}
     if (!!it.sceneItemEnabled === want) continue;
     try {
       await obsSend('SetSceneItemEnabled', {

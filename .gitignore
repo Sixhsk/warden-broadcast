@@ -78,3 +78,6 @@ tools/.sim-*.log
 .libdata*/
 .up.*.json
 .upurl
+.clean*/
+.readme-add.md
+.patch*.cjs

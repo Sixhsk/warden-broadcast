@@ -1,7 +1,7 @@
 {
   "name": "warden-broadcast",
   "productName": "WardenBroadcast",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "Apache-2.0",
   "private": true,
   "description": "明日方舟：卫戍协议 赛事直播 UI（控制台 + OBS 叠加层）",
