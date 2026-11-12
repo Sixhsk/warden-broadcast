@@ -1821,3 +1821,37 @@ md-primary-tab {
 .console .pickhead md-outlined-text-field{flex:1}
 .console .pickbody{overflow:auto;min-height:150px;padding:4px}
 .console .pickfoot{display:flex;align-items:center;justify-content:space-between;gap:12px}
+
+/* ---- Toast（错误提示）：可点击关闭，5 秒后自动消失 ---- */
+.console .toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(720px, calc(100vw - 48px));
+  cursor: pointer;
+  box-shadow: var(--elevation-2, 0 2px 8px rgba(0,0,0,.45));
+}
+.console .toast-text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+.console .toast-x {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: .65;
+  transition: opacity 120ms, background-color 120ms;
+}
+.console .toast-x:hover { opacity: 1; background: rgba(255,255,255,.14); }
+.console .toast-x:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }

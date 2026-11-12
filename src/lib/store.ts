@@ -179,7 +179,7 @@ function connect() {
           w.reject(new Error(msg.message));
         }
       }
-      for (const l of errorListeners) l(msg.message);
+      for (const l of errorListeners) l(nextError(msg.message));
     } else if (msg.t === 'log') {
       for (const l of logListeners) l(msg.line);
     }
@@ -199,7 +199,22 @@ function connect() {
   };
 }
 
-const errorListeners = new Set<(m: string) => void>();
+export type ErrItem = { id: number; text: string };
+
+const errorListeners = new Set<(m: ErrItem) => void>();
+let errSeq = 0;
+
+/** 生成一条带唯一 id 的错误；界面侧按 id 去重并在超时后移除 */
+function nextError(text: string): ErrItem {
+  return { id: ++errSeq, text };
+}
+
+/** 给任何模块用的错误入口（替代 alert） */
+export function pushError(text: string) {
+  if (!text) return;
+  const item = nextError(text);
+  for (const l of errorListeners) l(item);
+}
 const logListeners = new Set<(l: LogLine) => void>();
 
 export function ensureConnected() {
@@ -234,22 +249,38 @@ export function sendAck<T = any>(type: string, payload: Record<string, unknown> 
 export function useApp() {
   const [snap, setSnap] = useState<Snapshot | null>(latest);
   const [conn, setConn] = useState(connected);
-  const [errors, setErrors] = useState<string[]>([]);
+  const [errors, setErrors] = useState<ErrItem[]>([]);
+  const timers = useRef<number[]>([]);
 
   useEffect(() => {
     ensureConnected();
     listeners.add(setSnap);
     connListeners.add(setConn);
-    const onErr = (m: string) => setErrors((prev) => [...prev.slice(-2), m]);
+    const onErr = (m: ErrItem) => {
+      setErrors((prev) => {
+        if (prev.some((e) => e.id === m.id)) return prev;
+        return [...prev.slice(-2), m];
+      });
+      // 5 秒后自动关闭，避免提示长期挂在主界面上
+      const t = window.setTimeout(() => {
+        setErrors((prev) => prev.filter((e) => e.id !== m.id));
+      }, 5000);
+      timers.current.push(t);
+    };
     errorListeners.add(onErr);
     return () => {
       listeners.delete(setSnap);
       connListeners.delete(setConn);
       errorListeners.delete(onErr);
+      timers.current.forEach((t) => window.clearTimeout(t));
+      timers.current = [];
     };
   }, []);
 
-  return { snap, connected: conn, errors, dismissError: () => setErrors([]) };
+  const dismissError = (id?: number) =>
+    setErrors((prev) => (typeof id === 'number' ? prev.filter((e) => e.id !== id) : []));
+
+  return { snap, connected: conn, errors, dismissError };
 }
 
 export function serverNow() {

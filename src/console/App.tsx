@@ -9,6 +9,7 @@ import {
   fmtHMS,
   prepareAvatar,
   prepareBackground,
+  pushError,
   elapsedMs,
   send,
   sendAck,
@@ -223,12 +224,12 @@ function ImportBar({
             try {
               const files = await filesFromZipFile(f);
               if (!files.length) {
-                alert('压缩包里没有找到可用的图片');
+                pushError('压缩包里没有找到可用的图片');
                 return;
               }
               onStart(files, kind);
             } catch (err) {
-              alert((err as Error).message);
+              pushError((err as Error).message);
             }
           }}
         />
@@ -316,7 +317,7 @@ function LibraryCard({ st }: { st: MatchState }) {
     try {
       await sendAck('lib.remove', { id: a.id });
     } catch (err) {
-      alert((err as Error).message);
+      pushError((err as Error).message);
     }
   };
 
@@ -326,7 +327,7 @@ function LibraryCard({ st }: { st: MatchState }) {
     try {
       await sendAck('lib.rename', { id: a.id, name: nm });
     } catch (err) {
-      alert((err as Error).message);
+      pushError((err as Error).message);
     }
   };
 
@@ -531,7 +532,7 @@ function BackgroundCard({ st }: { st: MatchState }) {
                 const a = await uploadImage(f, 'background');
                 send('bg.set', { assetId: a.id });
               } catch (err) {
-                alert((err as Error).message);
+                pushError((err as Error).message);
               }
             }}
           />
@@ -1280,7 +1281,7 @@ function SettingsModal({ st, obs, onClose }: { st: MatchState; obs: any; onClose
 /* ------------------------------------------------------------------ App */
 
 export default function App() {
-  const { snap, connected, errors } = useApp();
+  const { snap, connected, errors, dismissError } = useApp();
   const [settings, setSettings] = useState(() => new URLSearchParams(location.search).has('settings'));
   const [picker, setPicker] = useState<PickerRequest | null>(null);
 
@@ -1318,7 +1319,21 @@ export default function App() {
         <span className="ver num">v{snap.version}</span>
       </header>
 
-      {errors.length > 0 && <div className="toast">{errors[errors.length - 1]}</div>}
+      {errors.length > 0 && (
+        <div className="toast" role="status" onClick={() => dismissError(errors[errors.length - 1].id)}>
+          <span className="toast-text">{errors[errors.length - 1].text}</span>
+          <button
+            className="toast-x"
+            aria-label="关闭提示"
+            onClick={(e) => {
+              e.stopPropagation();
+              dismissError(errors[errors.length - 1].id);
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <main className="cmain">
         <div className="col-left">

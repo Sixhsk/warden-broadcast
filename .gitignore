@@ -81,3 +81,5 @@ tools/.sim-*.log
 .clean*/
 .readme-add.md
 .patch*.cjs
+.t*.log
+.u.*.json
