@@ -642,9 +642,10 @@ async function applyObsFocus() {
   let changed = 0;
   for (const it of found) {
     const want = it.sourceName === target || it.sourceName === targetSim;
-    // 同一时刻只允许当前播出的那一路出声，其余全部静音
+    // 选手媒体源全时段静音：声音只走 AUD-DESKTOP（桌面回环，含解说），
+    // 切换焦点只换画面，不换声音，避免多路手机音频叠加/回声。
     try {
-      await obsSend('SetInputMute', { inputName: it.sourceName, inputMuted: !want });
+      await obsSend('SetInputMute', { inputName: it.sourceName, inputMuted: true });
     } catch {}
     if (!!it.sceneItemEnabled === want) continue;
     try {
@@ -738,7 +739,7 @@ function applyCommand(type, payload = {}) {
       if (!p) return '选手不存在';
       const patch = payload.patch || {};
       if (typeof patch.nickname === 'string') {
-        const n = patch.nickname.trim().slice(0, 24);
+        const n = patch.nickname.trim().slice(0, 48);
         if (!n) return '选手昵称不能为空';
         p.nickname = n;
       }

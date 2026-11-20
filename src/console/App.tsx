@@ -667,7 +667,6 @@ function SelectCard({ st }: { st: MatchState }) {
         {team.players.map((p) => {
           const offline = p.signal === 'offline';
           const on = p.id === st.focusPlayerId;
-          const av = assetUrl(st, p.avatar);
           return (
             <div
               key={p.id}
@@ -688,8 +687,6 @@ function SelectCard({ st }: { st: MatchState }) {
                 }
               }}
             >
-              <div className="fshot">{av ? <img src={av} alt="" /> : <span className="num">{p.id.slice(1)}</span>}</div>
-
               <div className="fnameline">
                 <span className="fname-text">{p.nickname || '未命名'}</span>
                 <span className="fid num">{p.id}</span>

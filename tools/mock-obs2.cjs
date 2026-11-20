@@ -92,6 +92,15 @@ wss.on('connection', (ws) => {
         if (it) { state.transforms[it.sourceName] = requestData.sceneItemTransform; state.log.push('tf:' + it.sourceName); } else { state.log.push('tf-miss:' + JSON.stringify(requestData).slice(0, 120)); }
         return reply({});
       }
+      case 'SetInputMute': {
+        const n = requestData.inputName;
+        if (state.inputs[n]) state.inputs[n].muted = !!requestData.inputMuted;
+        return reply({});
+      }
+      case 'GetInputMute': {
+        const n = requestData.inputName;
+        return reply({ inputMuted: !!(state.inputs[n] && state.inputs[n].muted) });
+      }
       case 'SetSceneItemIndex':
         return reply({});
       case 'GetSceneItemList': {

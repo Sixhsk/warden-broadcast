@@ -83,3 +83,10 @@ tools/.sim-*.log
 .patch*.cjs
 .t*.log
 .u.*.json
+.dbg.mjs
+.nick.mjs
+.m1.log
+.m2.log
+.t1.log
+.t2.log
+.gh-head.txt
