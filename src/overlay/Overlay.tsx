@@ -34,17 +34,6 @@ function TeamStyle({ team }: { team: 'A' | 'B' }) {
   } as React.CSSProperties;
 }
 
-function Avatar({ url, size, empty = 'NO AVATAR' }: { url: string | null; size: number; empty?: string }) {
-  if (!url) {
-    return (
-      <div className="sav empty" style={{ width: size, height: size }}>
-        {empty}
-      </div>
-    );
-  }
-  return <img className="sav" src={url} width={size} height={size} alt="" />;
-}
-
 /* 切换选手时的转场：主画面居中弹出选手框 + MD3 循环进度，约 3 秒后淡出，用于掩盖拉流重连的延迟 */
 function MdRing() {
   const ref = useRef<HTMLElement | null>(null);
@@ -184,14 +173,12 @@ function GameFeed({ state, player, teamName }: { state: MatchState; player: Play
   );
 }
 
-function Slot({ state, p, focused }: { state: MatchState; p: Player; focused: boolean }) {
-  const av = assetUrl(state, p.avatar);
+function Slot({ p, focused }: { state: MatchState; p: Player; focused: boolean }) {
   const offline = p.signal === 'offline';
   const cls = ['slot', focused ? 'on' : '', offline ? 'off' : ''].join(' ').trim();
   return (
     <div className={cls}>
       {focused && !offline && <div className="now">当前播出</div>}
-      <Avatar url={av} size={96} />
       <div className="sbody">
         <div className="sname">{p.nickname}</div>
         <div className="chips">
@@ -213,24 +200,14 @@ function Slot({ state, p, focused }: { state: MatchState; p: Player; focused: bo
 function Casters({ state }: { state: MatchState }) {
   return (
     <div className="casters">
-      {state.casters.map((c: Caster) => {
-        const av = assetUrl(state, c.avatar);
-        return (
-          <div className="caster" key={c.id}>
-            {av ? (
-              <img className="cav" src={av} alt="" />
-            ) : (
-              <div className="cav empty" style={{ width: 66, height: 66 }}>
-                NO IMG
-              </div>
-            )}
-            <div>
-              <div className="cname">{c.name}</div>
-              <div className="crole">{c.role || '解说'}</div>
-            </div>
+      {state.casters.map((c: Caster) => (
+        <div className="caster" key={c.id}>
+          <div>
+            <div className="cname">{c.name}</div>
+            <div className="crole">{c.role || '解说'}</div>
           </div>
-        );
-      })}
+        </div>
+      ))}
     </div>
   );
 }
